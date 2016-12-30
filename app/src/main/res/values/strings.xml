@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">GlobalInfo</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="short_description">Short Description (Optional)</string>
+    <string name="title">Title</string>
+    <string name="url">URL</string>
+</resources>
