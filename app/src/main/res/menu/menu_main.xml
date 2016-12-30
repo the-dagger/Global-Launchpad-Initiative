@@ -6,18 +6,18 @@
         android:id="@+id/action_log_out"
         android:orderInCategory="100"
         android:title="@string/log_out"
-        android:icon="@drawable/ic_action_log_out"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_share"
-        android:orderInCategory="200"
-        android:title="@string/action_settings"
-        android:icon="@drawable/ic_action_settings"
+        android:icon="@drawable/ic_logout_white_24dp"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_settings"
+        android:orderInCategory="200"
+        android:title="@string/action_settings"
+        android:icon="@drawable/ic_settings_white_24dp"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_share"
         android:orderInCategory="300"
         android:title="@string/share"
-        android:icon="@drawable/ic_action_share"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_share_white_24dp"
+        app:showAsAction="ifRoom" />
 </menu>

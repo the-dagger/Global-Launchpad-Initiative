@@ -1,6 +1,7 @@
 package com.dagger.globalinfo;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -30,6 +31,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ui.ResultCodes;
+import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,6 +47,7 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_INVITE = 100;
     ArrayAdapter<String> arrayAdapter;
     FirebaseAuth auth;
     String author;
@@ -158,6 +161,20 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+        if (requestCode == REQUEST_INVITE) {
+            Log.e("Result Code", String.valueOf(resultCode));
+            if (resultCode == RESULT_OK) {
+                // Get the invitation IDs of all sent messages
+                String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
+                for (String id : ids) {
+                    Log.d(getClass().getSimpleName(), "onActivityResult: sent invitation " + id);
+                }
+            } else {
+                // Sending failed or it was canceled, show failure message to the user
+                // ...
+                Snackbar.make(findViewById(android.R.id.content),"Failed to send invite",Snackbar.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
@@ -172,6 +189,22 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_share){
+            Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invite_title))
+                    .setMessage(getString(R.string.invite_message))
+                    .setDeepLink(Uri.parse(getString(R.string.invitation_deep_link)))
+                    .setCustomImage(Uri.parse(getString(R.string.invitation_custom_image)))
+                    .setCallToActionText(getString(R.string.invitation_cta))
+                    .build();
+            startActivityForResult(intent, REQUEST_INVITE);
+            Log.e("Invite sending","true");
+            return true;
+        }
+        if (id == R.id.action_log_out){
+            AuthUI.getInstance().signOut(this);
+            finish();
             return true;
         }
 
