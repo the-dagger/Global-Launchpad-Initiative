@@ -12,20 +12,23 @@ public class InfoObject implements Parcelable{
     private String url;
     private String description;
     private String author;
+    private String email;
+    private String category;
+    private String timestamp;
+    private String photo;
 
     public InfoObject() {
     }
 
-    private String category;
-    private String timestamp;
-
-    public InfoObject(String title, String url, String description, String author, String category, String timestamp) {
+    public InfoObject(String title, String url, String description, String author, String category, String timestamp, String email, String photo) {
         this.title = title;
         this.url = url;
         this.description = description;
         this.author = author;
         this.category = category;
         this.timestamp = timestamp;
+        this.email = email;
+        this.photo = photo;
     }
 
     protected InfoObject(Parcel in) {
@@ -33,7 +36,10 @@ public class InfoObject implements Parcelable{
         url = in.readString();
         description = in.readString();
         author = in.readString();
+        email = in.readString();
+        category = in.readString();
         timestamp = in.readString();
+        photo = in.readString();
     }
 
     public static final Creator<InfoObject> CREATOR = new Creator<InfoObject>() {
@@ -47,6 +53,22 @@ public class InfoObject implements Parcelable{
             return new InfoObject[size];
         }
     };
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public String getTitle() {
         return title;
@@ -107,6 +129,9 @@ public class InfoObject implements Parcelable{
         parcel.writeString(url);
         parcel.writeString(description);
         parcel.writeString(author);
+        parcel.writeString(email);
+        parcel.writeString(category);
         parcel.writeString(timestamp);
+        parcel.writeString(photo);
     }
 }

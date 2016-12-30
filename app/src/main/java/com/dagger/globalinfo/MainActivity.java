@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                             .build(),
                     RC_SIGN_IN);
         }
-
+        toolbar.setTitle("Welcome, " + author);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -121,10 +121,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void addAdmins(String... string) {
+    public void addAdmins(String... strings) {
         int i = 0;
-        while (i < string.length)
-            admins.add(string[i++]);
+        while (i < strings.length)
+            admins.add(strings[i++]);
+    }
+
+    public void removeAdmins(String... strings) {
+        int i = 0;
+        while (i < strings.length) {
+            if (admins.contains(strings[i]))
+                admins.remove(strings[i++]);
+        }
     }
 
     @Override
@@ -163,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
 
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -178,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
         final EditText title = (EditText) v.findViewById(R.id.contentTitle);
         final EditText url = (EditText) v.findViewById(R.id.contentURL);
         final EditText desc = (EditText) v.findViewById(R.id.contentDesc);
+
         categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -190,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         categorySpinner.setAdapter(arrayAdapter);
+
         final Pattern p = Pattern.compile(URL_REGEX);
         MaterialDialog dialog = new MaterialDialog.Builder(this)
                 .title("Add a new Resource")
@@ -209,9 +218,13 @@ public class MainActivity extends AppCompatActivity {
 
                             SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
                             String formattedDate = df.format(c.getTime());
-
+                            String photoUrl = "";
+                            try {
+                                photoUrl = auth.getCurrentUser().getPhotoUrl().toString();
+                            }catch (NullPointerException ignored){
+                            }
                             InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString(),
-                                    desc.getText().toString(), author, category, formattedDate);
+                                    desc.getText().toString(), author, category, formattedDate,auth.getCurrentUser().getEmail(),photoUrl);
 
                             switch (category) {
                                 case "Educational":
@@ -243,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
     public static class PlaceholderFragment extends Fragment {
 
         ArrayList<InfoObject> infoObjectList = new ArrayList<>();
-        InfoAdapter infoAdapter = new InfoAdapter(infoObjectList, getContext());
+        InfoAdapter infoAdapter;
         SwipeRefreshLayout swipeRefreshLayout;
 
         public PlaceholderFragment() {
@@ -253,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            infoAdapter = new InfoAdapter(infoObjectList, getContext());
             RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContent);
             swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
@@ -366,8 +380,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
+
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, position);
@@ -377,7 +390,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
             return 4;
         }
 

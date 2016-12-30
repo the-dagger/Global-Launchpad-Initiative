@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
     android:elevation="8dp"
+    android:id="@+id/single_item_card"
     android:orientation="vertical"
     app:cardCornerRadius="2dp">
 
@@ -30,7 +31,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/author"
                 android:layout_width="72dp"
                 android:layout_height="72dp" />
