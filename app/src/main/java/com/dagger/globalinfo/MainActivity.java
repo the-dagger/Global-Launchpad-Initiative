@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     String category;
     static boolean calledPersistance = false;
 
+    public static ArrayList<String> admins = new ArrayList<>();
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     private static final String EDUCATION = "education";
     private static final String HACKATHONS = "hackathons";
@@ -70,10 +72,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        if(!calledPersistance){
+        if (!calledPersistance) {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
             calledPersistance = true;
         }
+
+        addAdmins("manasbagula@gmail.com", "akashshkl01@gmail.com");
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         eduDbReference = firebaseDatabase.getReference().child(EDUCATION);
@@ -91,11 +95,9 @@ public class MainActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         if (auth.getCurrentUser() != null) {
-            // already signed in
-            if (auth.getCurrentUser().getEmail().equals("manasbagula@gmail.com"))
+            if (admins.contains(auth.getCurrentUser().getEmail()))
                 fab.setVisibility(View.VISIBLE);
             author = auth.getCurrentUser().getDisplayName();
-//            fetchFeeds();
         } else {
             startActivityForResult(
                     AuthUI.getInstance()
@@ -119,6 +121,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void addAdmins(String... string) {
+        int i = 0;
+        while (i < string.length)
+            admins.add(string[i++]);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -194,9 +201,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 
                         if (!p.matcher(url.getText()).find()) {
-                            Snackbar.make(findViewById(android.R.id.content),"Please enter correct URL",Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(findViewById(android.R.id.content), "Please enter correct URL", Snackbar.LENGTH_SHORT).show();
                         } else if (title.getText().toString().isEmpty()) {
-                            Snackbar.make(findViewById(android.R.id.content),"Title can't be blank",Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(findViewById(android.R.id.content), "Title can't be blank", Snackbar.LENGTH_SHORT).show();
                         } else {
                             Calendar c = Calendar.getInstance();
 
@@ -235,29 +242,38 @@ public class MainActivity extends AppCompatActivity {
 
     public static class PlaceholderFragment extends Fragment {
 
+        ArrayList<InfoObject> infoObjectList = new ArrayList<>();
+        InfoAdapter infoAdapter = new InfoAdapter(infoObjectList, getContext());
+        SwipeRefreshLayout swipeRefreshLayout;
 
         public PlaceholderFragment() {
-        }
-
-        public static Fragment getInstance(int position){
-            return null;
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            final RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContent);
+            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContent);
+            swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
             recyclerView.setLayoutManager(layoutManager);
-            Bundle args = getArguments();
-            int position = args.getInt(ARG_SECTION_NUMBER);
+            final int position = getArguments().getInt(ARG_SECTION_NUMBER);
             Log.e("Position", String.valueOf(position));
-            final ArrayList<InfoObject> infoObjectList = new ArrayList<>();
-            final InfoAdapter infoAdapter = new InfoAdapter(infoObjectList,getContext());
+            fetchData(position);
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+                @Override
+                public void onRefresh() {
+                    fetchData(position);
+                }
+            });
             recyclerView.setAdapter(infoAdapter);
-            switch (position){
-                case 0 :
+            return rootView;
+        }
+
+        public void fetchData(int position) {
+            switch (position) {
+                case 0:
                     eduDbReference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -265,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
 
                             for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
                                 InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(note);
+                                infoObjectList.add(0, note);
                             }
                             infoAdapter.notifyDataSetChanged();
                         }
@@ -276,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     break;
-                case 1 :
+                case 1:
                     hackDbReference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -284,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
 
                             for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
                                 InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(note);
+                                infoObjectList.add(0, note);
                             }
                             infoAdapter.notifyDataSetChanged();
                         }
@@ -295,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     break;
-                case 2 :
+                case 2:
                     meetDbReference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -303,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
 
                             for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
                                 InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(note);
+                                infoObjectList.add(0, note);
                             }
                             infoAdapter.notifyDataSetChanged();
                         }
@@ -314,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     break;
-                case 3 :
+                case 3:
                     techDbReference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -322,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
 
                             for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
                                 InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(note);
+                                infoObjectList.add(0, note);
                             }
                             infoAdapter.notifyDataSetChanged();
                         }
@@ -334,8 +350,11 @@ public class MainActivity extends AppCompatActivity {
                     });
                     break;
             }
-            return rootView;
+            if (swipeRefreshLayout.isRefreshing())
+                swipeRefreshLayout.setRefreshing(false);
+
         }
+
     }
 
 
