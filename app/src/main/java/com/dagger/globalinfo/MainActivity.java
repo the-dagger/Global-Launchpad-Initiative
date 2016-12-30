@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,7 +52,9 @@ public class MainActivity extends AppCompatActivity {
     static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference;
 
     String category;
+    static boolean calledPersistance = false;
 
+    public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     private static final String EDUCATION = "education";
     private static final String HACKATHONS = "hackathons";
     private static final String MEETUPS = "meetups";
@@ -66,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        if(!calledPersistance){
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+            calledPersistance = true;
+        }
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         eduDbReference = firebaseDatabase.getReference().child(EDUCATION);
@@ -111,23 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-//    private void fetchFeeds() {
-//        databaseReference.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                dataSnapshot.getValue(InfoObject.class)
-//                while (iterator.hasNext()){
-//
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -151,8 +142,6 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(findViewById(android.R.id.content), "No Internet Connection", Snackbar.LENGTH_SHORT).show();
             }
 
-            // User is not signed in. Maybe just wait for the user to press
-            // "sign in" again, or show a message.
         }
     }
 
@@ -164,9 +153,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -196,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         categorySpinner.setAdapter(arrayAdapter);
+        final Pattern p = Pattern.compile(URL_REGEX);
         MaterialDialog dialog = new MaterialDialog.Builder(this)
                 .title("Add a new Resource")
                 .customView(v, true)
@@ -205,10 +193,10 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 
-                        if (!url.getText().toString().contains("http")) {
-                            url.setError("Please enter the correct URL");
+                        if (!p.matcher(url.getText()).find()) {
+                            Snackbar.make(findViewById(android.R.id.content),"Please enter correct URL",Snackbar.LENGTH_SHORT).show();
                         } else if (title.getText().toString().isEmpty()) {
-                            title.setError("Please enter the title");
+                            Snackbar.make(findViewById(android.R.id.content),"Title can't be blank",Snackbar.LENGTH_SHORT).show();
                         } else {
                             Calendar c = Calendar.getInstance();
 
@@ -249,6 +237,10 @@ public class MainActivity extends AppCompatActivity {
 
 
         public PlaceholderFragment() {
+        }
+
+        public static Fragment getInstance(int position){
+            return null;
         }
 
         @Override
