@@ -1,4 +1,4 @@
-package com.dagger.globalinfo;
+package com.dagger.globalinfo.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

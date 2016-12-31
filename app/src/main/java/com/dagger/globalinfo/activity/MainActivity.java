@@ -1,4 +1,4 @@
-package com.dagger.globalinfo;
+package com.dagger.globalinfo.activity;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -7,21 +7,14 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -29,15 +22,15 @@ import android.widget.Spinner;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.dagger.globalinfo.model.InfoObject;
+import com.dagger.globalinfo.R;
+import com.dagger.globalinfo.adapter.SectionsPagerAdapter;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,21 +42,21 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_INVITE = 100;
     ArrayAdapter<String> arrayAdapter;
-    FirebaseAuth auth;
+    public static FirebaseAuth auth;
     String author;
     private static final int RC_SIGN_IN = 123;
     FirebaseDatabase firebaseDatabase;
-    static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference;
+    public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference;
 
     String category;
     static boolean calledPersistance = false;
 
     public static ArrayList<String> admins = new ArrayList<>();
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
-    private static final String EDUCATION = "education";
-    private static final String HACKATHONS = "hackathons";
-    private static final String MEETUPS = "meetups";
-    private static final String TECHNICAL = "technical";
+    public static final String EDUCATION = "education";
+    public static final String HACKATHONS = "hackathons";
+    public static final String MEETUPS = "meetups";
+    public static final String TECHNICAL = "technical";
     String[] categories = {"Educational", "Hackathons", "Meetups", "Technical Talks"};
 
     @Override
@@ -230,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
                 category = adapterView.getItemAtPosition(0).toString();
             }
         });
+
         categorySpinner.setAdapter(arrayAdapter);
 
         final Pattern p = Pattern.compile(URL_REGEX);
@@ -282,163 +276,5 @@ public class MainActivity extends AppCompatActivity {
 
         dialog.show();
 
-    }
-
-    private static final String ARG_SECTION_NUMBER = "section_number";
-
-    public static class PlaceholderFragment extends Fragment {
-
-        ArrayList<InfoObject> infoObjectList = new ArrayList<>();
-        InfoAdapter infoAdapter;
-        SwipeRefreshLayout swipeRefreshLayout;
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            infoAdapter = new InfoAdapter(infoObjectList, getContext());
-            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContent);
-            swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-            recyclerView.setLayoutManager(layoutManager);
-            final int position = getArguments().getInt(ARG_SECTION_NUMBER);
-            Log.e("Position", String.valueOf(position));
-            fetchData(position);
-            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-
-                @Override
-                public void onRefresh() {
-                    fetchData(position);
-                }
-            });
-            recyclerView.setAdapter(infoAdapter);
-            return rootView;
-        }
-
-        public void fetchData(int position) {
-            switch (position) {
-                case 0:
-                    eduDbReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            infoObjectList.clear();
-
-                            for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
-                                InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(0, note);
-                            }
-                            infoAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                    break;
-                case 1:
-                    hackDbReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            infoObjectList.clear();
-
-                            for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
-                                InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(0, note);
-                            }
-                            infoAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                    break;
-                case 2:
-                    meetDbReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            infoObjectList.clear();
-
-                            for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
-                                InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(0, note);
-                            }
-                            infoAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                    break;
-                case 3:
-                    techDbReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            infoObjectList.clear();
-
-                            for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
-                                InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                                infoObjectList.add(0, note);
-                            }
-                            infoAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                    break;
-            }
-            if (swipeRefreshLayout.isRefreshing())
-                swipeRefreshLayout.setRefreshing(false);
-
-        }
-
-    }
-
-
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, position);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public int getCount() {
-            return 4;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "educational";
-                case 1:
-                    return "hackathons";
-                case 2:
-                    return "meetups";
-                case 3:
-                    return "technical talks";
-            }
-            return null;
-        }
     }
 }

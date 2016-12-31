@@ -1,29 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/single_item_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/single_item_card"
-    android:layout_marginBottom="8dp"
-    android:orientation="vertical"
+    android:layout_margin="4dp"
     app:cardCornerRadius="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
         android:orientation="vertical"
         android:padding="8dp">
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingBottom="4dp"
-            android:text="Title"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title"
-            android:textSize="24sp" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingBottom="4dp"
+                android:text="Title"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title"
+                android:textSize="24sp" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:id="@+id/delete"
+                android:src="@drawable/ic_delete_black_24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true" />
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
