@@ -30,6 +30,7 @@ import static com.dagger.globalinfo.activity.MainActivity.EDUCATION;
  */
 
 public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
+    public static final String TAG = InfoAdapter.class.getSimpleName();
     private ArrayList<InfoObject> arrayList;
     private Context context;
 
@@ -60,7 +61,7 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
             public void onClick(View view) {
 
                 String url = arrayList.get(holder.getAdapterPosition()).getUrl();
-                if (!url.startsWith("https://") || !url.startsWith("http://")) {
+                if (!(url.startsWith("https://") || url.startsWith("http://"))) {
                     url = "https://" + url;
                 }
 
@@ -68,7 +69,6 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
                 builder.setToolbarColor(ContextCompat.getColor(view.getContext(), R.color.colorPrimary))
                         .addDefaultShareMenuItem()
                         .setShowTitle(true);
-
                 CustomTabsIntent customTabsIntent = builder.build();
                 customTabsIntent.launchUrl(view.getContext(), Uri.parse(url));
             }
