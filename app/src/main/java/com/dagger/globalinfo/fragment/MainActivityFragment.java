@@ -19,15 +19,11 @@ import android.view.ViewGroup;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.InfoAdapter;
 import com.dagger.globalinfo.model.InfoObject;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 import static com.dagger.globalinfo.activity.MainActivity.eduDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.hackDbReference;
@@ -35,14 +31,15 @@ import static com.dagger.globalinfo.activity.MainActivity.meetDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.techDbReference;
 
 public class MainActivityFragment extends Fragment {
+    public static final String TAG = MainActivityFragment.class.getSimpleName();
 
     public static final String ARG_SECTION_NUMBER = "section_number";
-    ArrayList<InfoObject> infoObjectList = new ArrayList<>();
-    InfoAdapter infoAdapter;
     @BindView(R.id.recyclerViewContent)
     RecyclerView recyclerView;
     @BindView(R.id.swipe_refresh)
     SwipeRefreshLayout swipeRefreshLayout;
+    private InfoAdapter infoAdapter;
+    private Unbinder unbinder;
 
     public MainActivityFragment() {
     }
@@ -52,9 +49,8 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ButterKnife.bind(this, rootView);
+        unbinder = ButterKnife.bind(this, rootView);
 
-        infoAdapter = new InfoAdapter(infoObjectList, getContext());
         swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(getContext(), R.color.colorAccent));
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         float width = displayMetrics.widthPixels / displayMetrics.density;
@@ -62,7 +58,7 @@ public class MainActivityFragment extends Fragment {
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getContext(), spanCount);
         recyclerView.setLayoutManager(layoutManager);
         final int position = getArguments().getInt(ARG_SECTION_NUMBER);
-        Log.e("Position", String.valueOf(position));
+        Log.e(TAG, String.valueOf(position));
         fetchData(position);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
@@ -76,26 +72,17 @@ public class MainActivityFragment extends Fragment {
     }
 
     public void addListener(DatabaseReference databaseReference) {
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                infoObjectList.clear();
-
-                for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
-                    InfoObject note = infoDataSnapshot.getValue(InfoObject.class);
-                    infoObjectList.add(0, note);
-                }
-                infoAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        infoAdapter = new InfoAdapter(
+                InfoObject.class,
+                R.layout.single_info,
+                InfoAdapter.ViewHolder.class,
+                databaseReference.orderByChild("timeInMillis"));
     }
 
     public void fetchData(int position) {
+        if (infoAdapter != null) {
+            infoAdapter.cleanup();
+        }
         switch (position) {
             case 0:
                 addListener(eduDbReference);
@@ -115,6 +102,20 @@ public class MainActivityFragment extends Fragment {
 
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
+        cleanup();
+    }
+
+    private void cleanup() {
+        if (infoAdapter != null) {
+            infoAdapter.cleanup();
+        }
+    }
 }
 
 

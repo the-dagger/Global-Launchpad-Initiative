@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
                             } catch (NullPointerException ignored) {
                             }
                             InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString(),
-                                    desc.getText().toString(), author, category, formattedDate, auth.getCurrentUser().getEmail(), photoUrl);
+                                    desc.getText().toString(), author, category, formattedDate, auth.getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
 
                             switch (category) {
                                 case "Educational":
