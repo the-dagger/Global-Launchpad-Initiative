@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -22,9 +23,9 @@ import android.widget.Spinner;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.dagger.globalinfo.model.InfoObject;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.SectionsPagerAdapter;
+import com.dagger.globalinfo.model.InfoObject;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.android.gms.appinvite.AppInviteInvitation;
@@ -38,33 +39,46 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.regex.Pattern;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_INVITE = 100;
-    ArrayAdapter<String> arrayAdapter;
-    public static FirebaseAuth auth;
-    String author;
-    private static final int RC_SIGN_IN = 123;
-    FirebaseDatabase firebaseDatabase;
-    public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference;
-
-    String category;
-    static boolean calledPersistance = false;
-
-    public static ArrayList<String> admins = new ArrayList<>();
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     public static final String EDUCATION = "education";
     public static final String HACKATHONS = "hackathons";
     public static final String MEETUPS = "meetups";
     public static final String TECHNICAL = "technical";
+    private static final int REQUEST_INVITE = 100;
+    private static final int RC_SIGN_IN = 123;
+    public static FirebaseAuth auth;
+    public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference;
+    public static ArrayList<String> admins = new ArrayList<>();
+    static boolean calledPersistance = false;
+    ArrayAdapter<String> arrayAdapter;
+    String author;
+    FirebaseDatabase firebaseDatabase;
+    String category;
     String[] categories = {"Educational", "Hackathons", "Meetups", "Technical Talks"};
+
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.container)
+    ViewPager mViewPager;
+    @BindView(R.id.tabs)
+    TabLayout tabLayout;
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+    @BindView(R.id.main_content)
+    CoordinatorLayout root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        ButterKnife.bind(this);
+
         setSupportActionBar(toolbar);
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -73,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             calledPersistance = true;
         }
 
-        addAdmins("manasbagula@gmail.com", "akashshkl01@gmail.com");
+        addAdmins("manasbagula@gmail.com", "akashshkl01@gmail.com", "singhalsaurabh95@gmail.com");
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         eduDbReference = firebaseDatabase.getReference().child(EDUCATION);
@@ -82,14 +96,11 @@ public class MainActivity extends AppCompatActivity {
         techDbReference = firebaseDatabase.getReference().child(TECHNICAL);
 
         // Set up the ViewPager with the sections adapter.
-        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
         auth = FirebaseAuth.getInstance();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         if (auth.getCurrentUser() != null) {
             if (admins.contains(auth.getCurrentUser().getEmail()))
                 fab.setVisibility(View.VISIBLE);
@@ -144,13 +155,13 @@ public class MainActivity extends AppCompatActivity {
 
             // Sign in canceled
             if (resultCode == RESULT_CANCELED) {
-                Snackbar.make(findViewById(android.R.id.content), "Sign in Cancelled", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(root, "Sign in Cancelled", Snackbar.LENGTH_SHORT).show();
                 finish();
             }
 
             // No network
             if (resultCode == ResultCodes.RESULT_NO_NETWORK) {
-                Snackbar.make(findViewById(android.R.id.content), "No Internet Connection", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(root, "No Internet Connection", Snackbar.LENGTH_SHORT).show();
             }
 
         }
@@ -165,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // Sending failed or it was canceled, show failure message to the user
                 // ...
-                Snackbar.make(findViewById(android.R.id.content),"Failed to send invite",Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(root, "Failed to send invite", Snackbar.LENGTH_SHORT).show();
             }
         }
     }
@@ -184,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-        if (id == R.id.action_share){
+        if (id == R.id.action_share) {
             Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invite_title))
                     .setMessage(getString(R.string.invite_message))
                     .setDeepLink(Uri.parse(getString(R.string.invitation_deep_link)))
@@ -192,10 +203,10 @@ public class MainActivity extends AppCompatActivity {
                     .setCallToActionText(getString(R.string.invitation_cta))
                     .build();
             startActivityForResult(intent, REQUEST_INVITE);
-            Log.e("Invite sending","true");
+            Log.e("Invite sending", "true");
             return true;
         }
-        if (id == R.id.action_log_out){
+        if (id == R.id.action_log_out) {
             AuthUI.getInstance().signOut(this);
             finish();
             return true;
@@ -207,10 +218,10 @@ public class MainActivity extends AppCompatActivity {
     public void showDialog() {
         View v = LayoutInflater.from(this).inflate(R.layout.add_dialog, null);
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
-        final Spinner categorySpinner = (Spinner) v.findViewById(R.id.contentSpinners);
-        final EditText title = (EditText) v.findViewById(R.id.contentTitle);
-        final EditText url = (EditText) v.findViewById(R.id.contentURL);
-        final EditText desc = (EditText) v.findViewById(R.id.contentDesc);
+        final Spinner categorySpinner = ButterKnife.findById(v, R.id.contentSpinners);
+        final EditText title = ButterKnife.findById(v, R.id.contentTitle);
+        final EditText url = ButterKnife.findById(v, R.id.contentURL);
+        final EditText desc = ButterKnife.findById(v, R.id.contentDesc);
 
         categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -237,9 +248,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 
                         if (!p.matcher(url.getText()).find()) {
-                            Snackbar.make(findViewById(android.R.id.content), "Please enter correct URL", Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(root, "Please enter correct URL", Snackbar.LENGTH_SHORT).show();
                         } else if (title.getText().toString().isEmpty()) {
-                            Snackbar.make(findViewById(android.R.id.content), "Title can't be blank", Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(root, "Title can't be blank", Snackbar.LENGTH_SHORT).show();
                         } else {
                             Calendar c = Calendar.getInstance();
 
@@ -248,10 +259,10 @@ public class MainActivity extends AppCompatActivity {
                             String photoUrl = "";
                             try {
                                 photoUrl = auth.getCurrentUser().getPhotoUrl().toString();
-                            }catch (NullPointerException ignored){
+                            } catch (NullPointerException ignored) {
                             }
                             InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString(),
-                                    desc.getText().toString(), author, category, formattedDate,auth.getCurrentUser().getEmail(),photoUrl);
+                                    desc.getText().toString(), author, category, formattedDate, auth.getCurrentUser().getEmail(), photoUrl);
 
                             switch (category) {
                                 case "Educational":

@@ -12,13 +12,15 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.dagger.globalinfo.model.InfoObject;
-import com.dagger.globalinfo.activity.MainActivity;
 import com.dagger.globalinfo.R;
+import com.dagger.globalinfo.activity.MainActivity;
+import com.dagger.globalinfo.model.InfoObject;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.dagger.globalinfo.activity.MainActivity.EDUCATION;
@@ -81,22 +83,33 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
         return arrayList.size();
     }
 
+    private void removeItem(InfoObject object) {
+        switch (object.getCategory()) {
+            case EDUCATION:
+//                eduDbReference.
+        }
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView title, description, date, authorName;
+        @BindView(R.id.title)
+        TextView title;
+        @BindView(R.id.description)
+        TextView description;
+        @BindView(R.id.date_added)
+        TextView date;
+        @BindView(R.id.author_name)
+        TextView authorName;
+        @BindView(R.id.author)
         CircleImageView author;
+        @BindView(R.id.single_item_card)
         CardView cardView;
+        @BindView(R.id.delete)
         ImageButton delete;
 
         ViewHolder(View itemView) {
             super(itemView);
-            title = (TextView) itemView.findViewById(R.id.title);
-            description = (TextView) itemView.findViewById(R.id.description);
-            date = (TextView) itemView.findViewById(R.id.date_added);
-            author = (CircleImageView) itemView.findViewById(R.id.author);
-            authorName = (TextView) itemView.findViewById(R.id.author_name);
-            cardView = (CardView) itemView.findViewById(R.id.single_item_card);
-            delete = (ImageButton) itemView.findViewById(R.id.delete);
+            ButterKnife.bind(this, itemView);
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -104,13 +117,6 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
                     removeItem(object);
                 }
             });
-        }
-    }
-
-    private void removeItem(InfoObject object) {
-        switch (object.getCategory()){
-            case EDUCATION :
-//                eduDbReference.
         }
     }
 }
