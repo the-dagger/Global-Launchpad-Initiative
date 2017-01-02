@@ -8,6 +8,17 @@ import android.os.Parcelable;
  */
 
 public class InfoObject implements Parcelable{
+    public static final Creator<InfoObject> CREATOR = new Creator<InfoObject>() {
+        @Override
+        public InfoObject createFromParcel(Parcel in) {
+            return new InfoObject(in);
+        }
+
+        @Override
+        public InfoObject[] newArray(int size) {
+            return new InfoObject[size];
+        }
+    };
     private String title;
     private String url;
     private String description;
@@ -16,11 +27,15 @@ public class InfoObject implements Parcelable{
     private String category;
     private String timestamp;
     private String photo;
+    /**
+     * To sort in reverse!
+     */
+    private long timeInMillis;
 
     public InfoObject() {
     }
 
-    public InfoObject(String title, String url, String description, String author, String category, String timestamp, String email, String photo) {
+    public InfoObject(String title, String url, String description, String author, String category, String timestamp, String email, String photo, long timeInMillis) {
         this.title = title;
         this.url = url;
         this.description = description;
@@ -29,6 +44,7 @@ public class InfoObject implements Parcelable{
         this.timestamp = timestamp;
         this.email = email;
         this.photo = photo;
+        setTimeInMillis(timeInMillis);
     }
 
     protected InfoObject(Parcel in) {
@@ -41,18 +57,6 @@ public class InfoObject implements Parcelable{
         timestamp = in.readString();
         photo = in.readString();
     }
-
-    public static final Creator<InfoObject> CREATOR = new Creator<InfoObject>() {
-        @Override
-        public InfoObject createFromParcel(Parcel in) {
-            return new InfoObject(in);
-        }
-
-        @Override
-        public InfoObject[] newArray(int size) {
-            return new InfoObject[size];
-        }
-    };
 
     public String getPhoto() {
         return photo;
@@ -133,5 +137,13 @@ public class InfoObject implements Parcelable{
         parcel.writeString(category);
         parcel.writeString(timestamp);
         parcel.writeString(photo);
+    }
+
+    public long getTimeInMillis() {
+        return timeInMillis;
+    }
+
+    public void setTimeInMillis(long timeInMillis) {
+        this.timeInMillis = -1 * timeInMillis;
     }
 }

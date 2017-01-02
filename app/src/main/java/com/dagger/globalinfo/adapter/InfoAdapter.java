@@ -1,66 +1,61 @@
 package com.dagger.globalinfo.adapter;
 
-import android.content.Context;
 import android.net.Uri;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.activity.MainActivity;
 import com.dagger.globalinfo.model.InfoObject;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.database.Query;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.dagger.globalinfo.activity.MainActivity.EDUCATION;
-
 /**
  * Created by Harshit on 25/12/16.
  */
 
-public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
+public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter.ViewHolder> {
     public static final String TAG = InfoAdapter.class.getSimpleName();
-    private ArrayList<InfoObject> arrayList;
-    private Context context;
 
-    public InfoAdapter(ArrayList<InfoObject> arrayList, Context context) {
-        this.arrayList = arrayList;
-        this.context = context;
+    /**
+     * @param modelClass      Firebase will marshall the data at a location into an instance of a class that you provide
+     * @param modelLayout     This is the layout used to represent a single item in the list. You will be responsible for populating an
+     *                        instance of the corresponding view with the data from an instance of modelClass.
+     * @param viewHolderClass The class that hold references to all sub-views in an instance modelLayout.
+     * @param ref             The Firebase location to watch for data changes. Can also be a slice of a location, using some
+     *                        combination of {@code limit()}, {@code startAt()}, and {@code endAt()}.
+     */
+    public InfoAdapter(Class<InfoObject> modelClass, int modelLayout, Class<ViewHolder> viewHolderClass, Query ref) {
+        super(modelClass, modelLayout, viewHolderClass, ref);
     }
 
-    @Override
-    public InfoAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_info, parent, false);
-        return new ViewHolder(v);
-    }
 
     @Override
-    public void onBindViewHolder(final InfoAdapter.ViewHolder holder, int position) {
-        holder.date.setText(arrayList.get(position).getTimestamp());
-        holder.description.setText(arrayList.get(position).getDescription());
-        holder.title.setText(arrayList.get(position).getTitle());
-        Picasso.with(context).load(arrayList.get(holder.getAdapterPosition())
-                .getPhoto())
+    protected void populateViewHolder(final ViewHolder holder, final InfoObject model, int position) {
+        holder.date.setText(model.getTimestamp());
+        holder.description.setText(model.getDescription());
+        holder.title.setText(model.getTitle());
+        Picasso.with(holder.itemView.getContext())
+                .load(model.getPhoto())
                 .placeholder(R.drawable.default_pic)
                 .error(R.drawable.default_pic)
                 .into(holder.author);
-        holder.authorName.setText(arrayList.get(position).getAuthor());
+        holder.authorName.setText(model.getAuthor());
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                String url = arrayList.get(holder.getAdapterPosition()).getUrl();
+                String url = model.getUrl();
                 if (!(url.startsWith("https://") || url.startsWith("http://"))) {
                     url = "https://" + url;
                 }
@@ -78,19 +73,7 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
     }
 
 
-    @Override
-    public int getItemCount() {
-        return arrayList.size();
-    }
-
-    private void removeItem(InfoObject object) {
-        switch (object.getCategory()) {
-            case EDUCATION:
-//                eduDbReference.
-        }
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.title)
         TextView title;
@@ -110,13 +93,6 @@ public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.ViewHolder> {
         ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            delete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    InfoObject object = arrayList.get(getAdapterPosition());
-                    removeItem(object);
-                }
-            });
         }
     }
 }
