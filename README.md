@@ -30,11 +30,17 @@ TODO :
 - [ ] Implement the delete ability for admins (implemented partially).
 - [ ] Add ability to bookmark a particular resource.
 
+Screenshots :
+====
+![](https://i.imgur.com/J9WKLCL.png?1) ![](https://i.imgur.com/nwoscQb.png?1)
+
 Compiling for your own use?
 ====
 Create a project in firebase console, link this project to it and palce the `google-services.json` inside  [app/](/app/) directory of your project.
 
-
-Screenshots :
+Open Source Libraries Used :
 ====
-![](https://i.imgur.com/J9WKLCL.png?1) ![](https://i.imgur.com/nwoscQb.png?1)
+* [Picasso](https://github.com/square/picasso)
+* [ButterKnife](https://github.com/JakeWharton/butterknife)
+* [MaterialDialogs](https://github.com/afollestad/material-dialogs)
+* [CircleImageView](https://github.com/hdodenhof/CircleImageView)
