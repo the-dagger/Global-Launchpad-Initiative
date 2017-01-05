@@ -90,7 +90,7 @@ public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter
         @BindView(R.id.delete)
         ImageButton delete;
 
-        ViewHolder(View itemView) {
+        public ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
