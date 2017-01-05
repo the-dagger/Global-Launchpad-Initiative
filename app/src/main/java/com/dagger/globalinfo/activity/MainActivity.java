@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")
                 .setTrigger(Trigger.executionWindow(periodicity, periodicity + toleranceInterval))
-//                .setTrigger(Trigger.executionWindow(15,5))  // For testing
+//                .setTrigger(Trigger.executionWindow(0,10))  // For testing
                 .setLifetime(Lifetime.FOREVER)
                 .setRecurring(true)
                 .setReplaceCurrent(true)

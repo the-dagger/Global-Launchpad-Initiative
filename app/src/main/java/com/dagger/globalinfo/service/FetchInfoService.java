@@ -22,20 +22,19 @@ import static com.dagger.globalinfo.activity.MainActivity.CONTENT;
 
 public class FetchInfoService extends JobService {
 
+    private static final String TAG = "SyncService";
     InfoObject note;
     NotificationCompat.Builder notificationBuilder;
-    private static final String TAG = "SyncService";
 
     public FetchInfoService() {
     }
 
     @Override
     public boolean onStartJob(com.firebase.jobdispatcher.JobParameters job) {
-        Log.e(TAG, "Executing job id: " + job.getTag());
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference().child(CONTENT);
-        Log.e(TAG,dbReference.getKey());
-        
-        dbReference.addValueEventListener(new ValueEventListener() {    // Never called
+
+        //Single to auto remove listener when data is received.
+        dbReference.addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -47,6 +46,11 @@ public class FetchInfoService extends JobService {
                         .setSmallIcon(R.drawable.ic_delete_black_48dp)
                         .setContentTitle(note.getTitle())
                         .setContentText(note.getDescription());
+
+                NotificationManager mNotificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                mNotificationManager.notify(1, notificationBuilder.build());
             }
 
             @Override
@@ -54,11 +58,7 @@ public class FetchInfoService extends JobService {
                 Log.e(TAG,"Listener Cancelled");
             }
         });
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        mNotificationManager.notify(1, notificationBuilder.build());  // Null Pointer
-        return true;
+        return false;
     }
 
     @Override
