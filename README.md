@@ -1,10 +1,6 @@
-Global-Launchpad-Initiative
-====
-Android App for Global Launchpad Initiative
-
 What is it?
 ====
-A simple Android App built on top of Firebase which can server as a medium to share resources among users.<br>
+A simple Android App built on top of Firebase which can serve as a medium to share resources among users.<br>
 The resources can be further broken down in 4 categories :
 * Educational Resources
 * Hackathons
