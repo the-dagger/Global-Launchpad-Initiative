@@ -25,6 +25,7 @@ TODO :
 - [ ] Create a preference screen to manage user profile and enable/disable the background refresh.
 - [ ] Implement the delete ability for admins (implemented partially).
 - [ ] Add ability to bookmark a particular resource.
+- [ ] Implement functionality to add admins via Firebase Remote Config.
 
 Screenshots :
 ====
