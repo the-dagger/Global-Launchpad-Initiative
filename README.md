@@ -39,7 +39,7 @@ Create a project in firebase console, link this project to it and palce the `goo
 
 Project Maintainers :
 ====
-[@dagger](https://github.com/the-dagger) and [@gogeta95](https://github.com/gogeta95)
+[@the-dagger](https://github.com/the-dagger) and [@gogeta95](https://github.com/gogeta95)
 
 Open Source Libraries Used :
 ====
