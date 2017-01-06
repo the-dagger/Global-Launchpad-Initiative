@@ -4,14 +4,16 @@ package com.dagger.globalinfo.fragment;
  * Created by Harshit on 31/12/16.
  */
 
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +27,13 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
+import static com.dagger.globalinfo.activity.MainActivity.contentDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.eduDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.hackDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.meetDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.techDbReference;
 
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCallback {
     public static final String TAG = MainActivityFragment.class.getSimpleName();
 
     public static final String ARG_SECTION_NUMBER = "section_number";
@@ -57,14 +60,12 @@ public class MainActivityFragment extends Fragment {
         int spanCount = (int) (width / 300.00);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getContext(), spanCount);
         recyclerView.setLayoutManager(layoutManager);
-        final int position = getArguments().getInt(ARG_SECTION_NUMBER);
-        Log.e(TAG, String.valueOf(position));
-        fetchData(position);
+        fetchData();
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
             @Override
             public void onRefresh() {
-                fetchData(position);
+                fetchData();
             }
         });
         recyclerView.setAdapter(infoAdapter);
@@ -77,29 +78,35 @@ public class MainActivityFragment extends Fragment {
                 R.layout.single_info,
                 InfoAdapter.ViewHolder.class,
                 databaseReference.orderByChild("timeInMillis"));
+        infoAdapter.setItemCallback(this);
     }
 
-    public void fetchData(int position) {
+    public void fetchData() {
         if (infoAdapter != null) {
             infoAdapter.cleanup();
         }
-        switch (position) {
-            case 0:
-                addListener(eduDbReference);
-                break;
-            case 1:
-                addListener(hackDbReference);
-                break;
-            case 2:
-                addListener(meetDbReference);
-                break;
-            case 3:
-                addListener(techDbReference);
-                break;
+        if (getCurrReference() != null) {
+            addListener(getCurrReference());
         }
         if (swipeRefreshLayout.isRefreshing())
             swipeRefreshLayout.setRefreshing(false);
 
+    }
+
+    private DatabaseReference getCurrReference() {
+        int position = getArguments().getInt(ARG_SECTION_NUMBER);
+        switch (position) {
+            case 0:
+                return eduDbReference;
+            case 1:
+                return hackDbReference;
+            case 2:
+                return meetDbReference;
+            case 3:
+                return techDbReference;
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -115,6 +122,31 @@ public class MainActivityFragment extends Fragment {
         if (infoAdapter != null) {
             infoAdapter.cleanup();
         }
+    }
+
+    @Override
+    public void onItemClicked(InfoObject model) {
+        String url = model.getUrl();
+        if (!(url.startsWith("https://") || url.startsWith("http://"))) {
+            url = "https://" + url;
+        }
+
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.setToolbarColor(ContextCompat.getColor(getContext(), R.color.colorPrimary))
+                .addDefaultShareMenuItem()
+                .setShowTitle(true);
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(getContext(), Uri.parse(url));
+    }
+
+    @Override
+    public void onDeleteClicked(InfoObject infoObject, DatabaseReference databaseReference) {
+        String contentKey = infoObject.getContentKey();
+        //Backport check.
+        if (!TextUtils.isEmpty(contentKey)) {
+            contentDbReference.child(contentKey).removeValue();
+        }
+        databaseReference.removeValue();
     }
 }
 

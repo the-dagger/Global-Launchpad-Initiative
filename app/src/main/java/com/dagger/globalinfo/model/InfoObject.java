@@ -27,6 +27,7 @@ public class InfoObject implements Parcelable{
     private String category;
     private String timestamp;
     private String photo;
+    private String contentKey;
     /**
      * To sort in reverse!
      */
@@ -56,6 +57,7 @@ public class InfoObject implements Parcelable{
         category = in.readString();
         timestamp = in.readString();
         photo = in.readString();
+        contentKey = in.readString();
     }
 
     public String getPhoto() {
@@ -122,6 +124,14 @@ public class InfoObject implements Parcelable{
         this.category = category;
     }
 
+    public String getContentKey() {
+        return contentKey;
+    }
+
+    public void setContentKey(String contentKey) {
+        this.contentKey = contentKey;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -137,6 +147,7 @@ public class InfoObject implements Parcelable{
         parcel.writeString(category);
         parcel.writeString(timestamp);
         parcel.writeString(photo);
+        parcel.writeString(contentKey);
     }
 
     public long getTimeInMillis() {
