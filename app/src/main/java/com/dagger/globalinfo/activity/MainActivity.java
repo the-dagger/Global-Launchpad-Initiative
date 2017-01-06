@@ -29,6 +29,7 @@ import com.dagger.globalinfo.model.InfoObject;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.android.gms.appinvite.AppInviteInvitation;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -44,15 +45,18 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String TAG = MainActivity.class.getSimpleName();
+
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     public static final String EDUCATION = "education";
     public static final String HACKATHONS = "hackathons";
     public static final String MEETUPS = "meetups";
     public static final String TECHNICAL = "technical";
+    public static final String CONTENT = "content";
     private static final int REQUEST_INVITE = 100;
     private static final int RC_SIGN_IN = 123;
     public static FirebaseAuth auth;
-    public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference;
+    public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
     public static ArrayList<String> admins = new ArrayList<>();
     static boolean calledPersistance = false;
     ArrayAdapter<String> arrayAdapter;
@@ -94,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         hackDbReference = firebaseDatabase.getReference().child(HACKATHONS);
         meetDbReference = firebaseDatabase.getReference().child(MEETUPS);
         techDbReference = firebaseDatabase.getReference().child(TECHNICAL);
+        contentDbReference = firebaseDatabase.getReference().child(CONTENT);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager.setAdapter(mSectionsPagerAdapter);
@@ -264,18 +269,19 @@ public class MainActivity extends AppCompatActivity {
                             InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString(),
                                     desc.getText().toString(), author, category, formattedDate, auth.getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
 
+
                             switch (category) {
                                 case "Educational":
-                                    eduDbReference.push().setValue(infoObject);
+                                    pushData(eduDbReference, infoObject);
                                     break;
                                 case "Hackathons":
-                                    hackDbReference.push().setValue(infoObject);
+                                    pushData(hackDbReference, infoObject);
                                     break;
                                 case "Meetups":
-                                    meetDbReference.push().setValue(infoObject);
+                                    pushData(meetDbReference, infoObject);
                                     break;
                                 case "Technical Talks":
-                                    techDbReference.push().setValue(infoObject);
+                                    pushData(techDbReference, infoObject);
                                     break;
                                 default:
                                     Log.e(getClass().getSimpleName(), "Unable to push due to category mismatch");
@@ -287,5 +293,18 @@ public class MainActivity extends AppCompatActivity {
 
         dialog.show();
 
+    }
+
+    private void pushData(final DatabaseReference reference, final InfoObject infoObject) {
+        final DatabaseReference tempReference = contentDbReference.push();
+        tempReference.setValue(infoObject).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                //Get Key from content and push to actual db.
+                String contentKey = tempReference.getKey();
+                infoObject.setContentKey(contentKey);
+                reference.push().setValue(infoObject);
+            }
+        });
     }
 }
