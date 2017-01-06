@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -26,6 +27,7 @@ import static com.dagger.globalinfo.activity.MainActivity.CONTENT;
 public class FetchInfoService extends JobService {
 
     private static final String TAG = "SyncService";
+    private static final String KEY = "LatestDataKey";
     InfoObject note;
     NotificationCompat.Builder notificationBuilder;
 
@@ -45,20 +47,23 @@ public class FetchInfoService extends JobService {
                 for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
                     note = infoDataSnapshot.getValue(InfoObject.class);
                 }
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-                notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(note.getTitle())
-                        .setContentText(note.getDescription())
-                        .setContentIntent(pendingIntent)
-                        .setContentInfo(note.getAuthor());
+                SharedPreferences sharedPreferences = getSharedPreferences("com.dagger.globalinfo",MODE_PRIVATE);
+                // Check if the key inside sharedpref is the latest one and display notification only if it is not
+                if (!sharedPreferences.getString(KEY,"").equals(note.getContentKey())) {
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
+                            .setSmallIcon(R.drawable.ic_update)
+                            .setContentTitle(note.getTitle())
+                            .setContentText(note.getDescription())
+                            .setContentIntent(pendingIntent)
+                            .setContentInfo(note.getAuthor());
 
-                NotificationManager mNotificationManager =
-                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                mNotificationManager.notify(1, notificationBuilder.build());
-
+                    NotificationManager mNotificationManager =
+                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    sharedPreferences.edit().putString(KEY,note.getContentKey()).apply();  // Add the latest key in sharedpreferences
+                    mNotificationManager.notify(1, notificationBuilder.build());
+                }
             }
 
             @Override
