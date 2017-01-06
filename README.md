@@ -27,7 +27,7 @@ TODO :
 - [ ] Add facebook login.
 - [ ] Create a preference screen to manage user profile and enable/disable the background refresh.
 - [ ] Add ability to bookmark a particular resource.
-- [ ] Implement functionality to add admins via Firebase Remote Config.
+- [x] Implement functionality to add admins via Firebase Remote Config.
 
 Screenshots :
 ====
