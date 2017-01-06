@@ -37,6 +37,10 @@ Compiling for your own use?
 ====
 Create a project in firebase console, link this project to it and palce the `google-services.json` inside  [app/](/app/) directory of your project.
 
+Project Maintainers :
+====
+[@dagger](https://github.com/the-dagger) and [@gogeta95](https://github.com/gogeta95)
+
 Open Source Libraries Used :
 ====
 * [Picasso](https://github.com/square/picasso)
