@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
     public static FirebaseAuth auth;
     public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
     public static ArrayList<String> admins = new ArrayList<>();
-    static boolean calledPersistance = false;
     FirebaseJobDispatcher dispatcher;
     ArrayAdapter<String> arrayAdapter;
     String author;
@@ -93,11 +92,6 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        if (!calledPersistance) {
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-            calledPersistance = true;
-        }
 
         dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
 
@@ -222,8 +216,26 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_log_out) {
-            AuthUI.getInstance().signOut(this);
-            finish();
+            MaterialDialog dialog = new MaterialDialog.Builder(this)
+                    .title("Do you want to log out?")
+                    .negativeText("No")
+                    .positiveText("Yes")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            AuthUI.getInstance().signOut(MainActivity.this);
+                            finish();
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .build();
+            dialog.show();
+
             return true;
         }
 
@@ -240,14 +252,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         Log.e(getClass().getSimpleName(),"onPause Called");
-        final int periodicity = (int) TimeUnit.MINUTES.toSeconds(60); // Every 10 minutes periodicity
+        final int periodicity = (int) TimeUnit.MINUTES.toSeconds(60); // Every 60 minutes periodicity
         final int toleranceInterval = (int)TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
         Log.e(getClass().getSimpleName(),"Job will execute in" + "or");
         Job myJob = dispatcher.newJobBuilder()
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")
                 .setTrigger(Trigger.executionWindow(periodicity, periodicity + toleranceInterval))
-//                .setTrigger(Trigger.executionWindow(60,75))
+//                .setTrigger(Trigger.executionWindow(600,700))
                 .setLifetime(Lifetime.FOREVER)
                 .setRecurring(true)
                 .setReplaceCurrent(true)
