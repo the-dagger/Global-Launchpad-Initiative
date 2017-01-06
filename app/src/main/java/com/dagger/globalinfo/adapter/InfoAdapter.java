@@ -9,7 +9,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.dagger.globalinfo.R;
-import com.dagger.globalinfo.activity.MainActivity;
 import com.dagger.globalinfo.model.InfoObject;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
@@ -108,14 +107,21 @@ public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter
             date.setText(model.getTimestamp());
             description.setText(model.getDescription());
             title.setText(model.getTitle());
-            Picasso.with(itemView.getContext())
-                    .load(model.getPhoto())
-                    .placeholder(R.drawable.default_pic)
-                    .error(R.drawable.default_pic)
-                    .into(author);
-            authorName.setText(model.getAuthor());
-            if (!MainActivity.admins.contains(MainActivity.auth.getCurrentUser().getEmail()))
-                delete.setVisibility(View.GONE);
+            try {
+                Picasso.with(itemView.getContext())
+                        .load(model.getPhoto())
+                        .placeholder(R.drawable.default_pic)
+                        .error(R.drawable.default_pic)
+                        .into(author);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Picasso.with(itemView.getContext())
+                        .load(R.drawable.default_pic)
+                        .into(author);
+            }
+            if (model.getAuthor() != null)
+                authorName.setText(model.getAuthor());
+            delete.setVisibility(View.VISIBLE);
         }
     }
 }

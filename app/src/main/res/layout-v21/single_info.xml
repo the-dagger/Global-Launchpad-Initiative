@@ -90,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:text="Author : "
+                android:text="Anonymous"
                 android:id="@+id/author_name"
                 android:textAppearance="@android:style/TextAppearance.Material.Small"
                 android:textStyle="bold"/>

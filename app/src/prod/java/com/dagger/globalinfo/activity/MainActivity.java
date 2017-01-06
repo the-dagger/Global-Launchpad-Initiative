@@ -222,8 +222,26 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_log_out) {
-            AuthUI.getInstance().signOut(this);
-            finish();
+            MaterialDialog dialog = new MaterialDialog.Builder(this)
+                    .title("Do you want to log out?")
+                    .negativeText("No")
+                    .positiveText("Yes")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            AuthUI.getInstance().signOut(MainActivity.this);
+                            finish();
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .build();
+            dialog.show();
+
             return true;
         }
 

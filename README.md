@@ -22,18 +22,24 @@ Features :
 TODO : 
 ====
 - [x] Implementing a service to fetch data from firebase db and display a notification when a new data is added.
-- [ ] Create a preference screen to manage user profile and enable/disable the background refresh.
 - [x] Implement the delete ability for admins (implemented partially).
+- [ ] Add twitter login.
+- [ ] Add facebook login.
+- [ ] Create a preference screen to manage user profile and enable/disable the background refresh.
 - [ ] Add ability to bookmark a particular resource.
-- [ ] Implement functionality to add admins via Firebase Remote Config.
+- [x] Implement functionality to add admins via Firebase Remote Config.
 
 Screenshots :
 ====
-![](https://i.imgur.com/J9WKLCL.png?1) ![](https://i.imgur.com/nwoscQb.png?1)
+![](https://i.imgur.com/J9WKLCL.png?1)  ![](https://i.imgur.com/nwoscQb.png?1)  ![](https://i.imgur.com/krBQleU.png?1)
 
 Compiling for your own use?
 ====
 Create a project in firebase console, link this project to it and palce the `google-services.json` inside  [app/](/app/) directory of your project.
+
+Project Maintainers :
+====
+[@the-dagger](https://github.com/the-dagger) and [@gogeta95](https://github.com/gogeta95)
 
 Open Source Libraries Used :
 ====

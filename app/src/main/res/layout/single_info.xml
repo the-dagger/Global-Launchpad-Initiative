@@ -94,7 +94,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:text="Author : "
+                android:text="Anonymos"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Small"
                 android:textStyle="bold" />
 
