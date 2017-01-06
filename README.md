@@ -31,7 +31,7 @@ TODO :
 
 Screenshots :
 ====
-![](https://i.imgur.com/J9WKLCL.png?1) ![](https://i.imgur.com/nwoscQb.png?1)
+![](https://i.imgur.com/J9WKLCL.png?1)  ![](https://i.imgur.com/nwoscQb.png?1)  ![](https://i.imgur.com/krBQleU.png?1)
 
 Compiling for your own use?
 ====
