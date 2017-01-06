@@ -22,8 +22,10 @@ Features :
 TODO : 
 ====
 - [x] Implementing a service to fetch data from firebase db and display a notification when a new data is added.
-- [ ] Create a preference screen to manage user profile and enable/disable the background refresh.
 - [x] Implement the delete ability for admins (implemented partially).
+- [ ] Add twitter login.
+- [ ] Add facebook login.
+- [ ] Create a preference screen to manage user profile and enable/disable the background refresh.
 - [ ] Add ability to bookmark a particular resource.
 - [ ] Implement functionality to add admins via Firebase Remote Config.
 
