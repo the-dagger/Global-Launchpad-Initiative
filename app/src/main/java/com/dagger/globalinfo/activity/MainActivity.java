@@ -26,6 +26,12 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.SectionsPagerAdapter;
 import com.dagger.globalinfo.model.InfoObject;
+import com.dagger.globalinfo.service.FetchInfoService;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.Trigger;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.android.gms.appinvite.AppInviteInvitation;
@@ -38,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import butterknife.BindView;
@@ -59,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
     public static ArrayList<String> admins = new ArrayList<>();
     static boolean calledPersistance = false;
+    FirebaseJobDispatcher dispatcher;
     ArrayAdapter<String> arrayAdapter;
     String author;
     FirebaseDatabase firebaseDatabase;
@@ -90,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
             calledPersistance = true;
         }
+
+        dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
 
         addAdmins("manasbagula@gmail.com", "akashshkl01@gmail.com", "singhalsaurabh95@gmail.com");
 
@@ -218,6 +228,35 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        dispatcher.cancelAll();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e(getClass().getSimpleName(),"onPause Called");
+        final int periodicity = (int) TimeUnit.MINUTES.toSeconds(60); // Every 10 minutes periodicity
+        final int toleranceInterval = (int)TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
+        Log.e(getClass().getSimpleName(),"Job will execute in" + "or");
+        Job myJob = dispatcher.newJobBuilder()
+                .setService(FetchInfoService.class)
+                .setTag("FetchInfoServiceTag")
+                .setTrigger(Trigger.executionWindow(periodicity, periodicity + toleranceInterval))
+//                .setTrigger(Trigger.executionWindow(60,75))
+                .setLifetime(Lifetime.FOREVER)
+                .setRecurring(true)
+                .setReplaceCurrent(true)
+                .build();
+
+        int result = dispatcher.schedule(myJob);
+        if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
+            Log.e(getClass().getSimpleName(),"Error executing task");
+        }
     }
 
     public void showDialog() {

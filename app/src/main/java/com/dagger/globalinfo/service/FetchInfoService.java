@@ -1,11 +1,14 @@
 package com.dagger.globalinfo.service;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.dagger.globalinfo.R;
+import com.dagger.globalinfo.activity.MainActivity;
 import com.dagger.globalinfo.model.InfoObject;
 import com.firebase.jobdispatcher.JobService;
 import com.google.firebase.database.DataSnapshot;
@@ -38,24 +41,29 @@ public class FetchInfoService extends JobService {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.e(TAG,"OnDataChanged Called");
+                Log.e(TAG, "OnDataChanged Called");
                 for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
                     note = infoDataSnapshot.getValue(InfoObject.class);
                 }
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
                 notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
-                        .setSmallIcon(R.drawable.ic_delete_black_48dp)
+                        .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(note.getTitle())
-                        .setContentText(note.getDescription());
+                        .setContentText(note.getDescription())
+                        .setContentIntent(pendingIntent)
+                        .setContentInfo(note.getAuthor());
 
                 NotificationManager mNotificationManager =
                         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                 mNotificationManager.notify(1, notificationBuilder.build());
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.e(TAG,"Listener Cancelled");
+                Log.e(TAG, "Listener Cancelled");
             }
         });
         return false;
