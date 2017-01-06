@@ -63,7 +63,7 @@ public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter
 
         void onItemClicked(InfoObject infoObject);
 
-        void onDeleteClicked(DatabaseReference databaseReference);
+        void onDeleteClicked(InfoObject infoObject, DatabaseReference databaseReference);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -99,7 +99,8 @@ public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter
         @OnClick(R.id.delete)
         void deleteClicked() {
             if (callback != null) {
-                callback.onDeleteClicked(getRef(getAdapterPosition()));
+                InfoObject infoObject = getItem(getAdapterPosition());
+                callback.onDeleteClicked(infoObject, getRef(getAdapterPosition()));
             }
         }
 

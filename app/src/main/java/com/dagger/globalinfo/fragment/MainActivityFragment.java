@@ -12,6 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
+import static com.dagger.globalinfo.activity.MainActivity.contentDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.eduDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.hackDbReference;
 import static com.dagger.globalinfo.activity.MainActivity.meetDbReference;
@@ -138,7 +140,12 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
     }
 
     @Override
-    public void onDeleteClicked(DatabaseReference databaseReference) {
+    public void onDeleteClicked(InfoObject infoObject, DatabaseReference databaseReference) {
+        String contentKey = infoObject.getContentKey();
+        //Backport check.
+        if (!TextUtils.isEmpty(contentKey)) {
+            contentDbReference.child(contentKey).removeValue();
+        }
         databaseReference.removeValue();
     }
 }
