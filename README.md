@@ -39,6 +39,12 @@ Compiling for your own use?
 ====
 Create a project in firebase console, link this project to it and palce the `google-services.json` inside  [app/demo](/app/demo) and [app/prod](/app/prod) directory of the project.
 
+Want to contribute to the project?
+====
+Contributors to the project are most welcomed you can contribute to the project in following ways,
+* Take up any of the existing issues 
+* Report a new issue (Feature Request / Bug Report)
+
 Project Maintainers :
 ====
 [@the-dagger](https://github.com/the-dagger) and [@gogeta95](https://github.com/gogeta95)
