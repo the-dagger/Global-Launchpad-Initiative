@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.dagger.globalinfo.BuildConfig;
+import com.dagger.globalinfo.GlobalInfoApplication;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
@@ -21,7 +22,7 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (auth.getCurrentUser() == null) {
+        if (GlobalInfoApplication.getAuth().getCurrentUser() == null) {
             return;
         }
 
@@ -45,7 +46,7 @@ public class MainActivity extends BaseActivity {
                 remoteConfig.activateFetched();
                 String admins = remoteConfig.getString(KEY_ADMINS);
                 isAdmin = !TextUtils.isEmpty(admins)
-                        && admins.contains(auth.getCurrentUser().getUid());
+                        && admins.contains(GlobalInfoApplication.getAuth().getCurrentUser().getUid());
                 fab.setVisibility(isAdmin ? View.VISIBLE : View.INVISIBLE);
                 if (mSectionsPagerAdapter != null) {
 

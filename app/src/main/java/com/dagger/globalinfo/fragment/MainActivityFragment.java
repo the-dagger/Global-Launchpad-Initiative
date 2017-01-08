@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.InfoAdapter;
 import com.dagger.globalinfo.model.InfoObject;
@@ -27,11 +28,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-import static com.dagger.globalinfo.activity.MainActivity.contentDbReference;
-import static com.dagger.globalinfo.activity.MainActivity.eduDbReference;
-import static com.dagger.globalinfo.activity.MainActivity.hackDbReference;
-import static com.dagger.globalinfo.activity.MainActivity.meetDbReference;
-import static com.dagger.globalinfo.activity.MainActivity.techDbReference;
 
 public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCallback {
     public static final String TAG = MainActivityFragment.class.getSimpleName();
@@ -106,13 +102,13 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
         int position = getArguments().getInt(ARG_SECTION_NUMBER);
         switch (position) {
             case 0:
-                return eduDbReference;
+                return GlobalInfoApplication.getEduDbReference();
             case 1:
-                return hackDbReference;
+                return GlobalInfoApplication.getHackDbReference();
             case 2:
-                return meetDbReference;
+                return GlobalInfoApplication.getMeetDbReference();
             case 3:
-                return techDbReference;
+                return GlobalInfoApplication.getTechDbReference();
             default:
                 return null;
         }
@@ -153,7 +149,7 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
         String contentKey = infoObject.getContentKey();
         //Backport check.
         if (!TextUtils.isEmpty(contentKey)) {
-            contentDbReference.child(contentKey).removeValue();
+            GlobalInfoApplication.getContentDbReference().child(contentKey).removeValue();
         }
         databaseReference.removeValue();
     }
