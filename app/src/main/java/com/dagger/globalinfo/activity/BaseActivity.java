@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
     public static FirebaseAuth auth;
     public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
     public static ArrayList<String> admins = new ArrayList<>();
-    static boolean calledPersistance = false;
     FirebaseJobDispatcher dispatcher;
     ArrayAdapter<String> arrayAdapter;
     String author;
@@ -94,11 +93,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        if (!calledPersistance) {
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-            calledPersistance = true;
-        }
-
         dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
 
         addAdmins("manasbagula@gmail.com", "akashshkl01@gmail.com", "singhalsaurabh95@gmail.com");
@@ -117,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
-            if (admins.contains(auth.getCurrentUser().getEmail()))
-                fab.setVisibility(View.VISIBLE);
             author = auth.getCurrentUser().getDisplayName();
         } else {
             startActivityForResult(
@@ -133,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
                             .build(),
                     RC_SIGN_IN);
         }
-        toolbar.setTitle("Welcome, " + author);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -222,8 +213,26 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_log_out) {
-            AuthUI.getInstance().signOut(this);
-            finish();
+            MaterialDialog dialog = new MaterialDialog.Builder(this)
+                    .title("Do you want to log out?")
+                    .negativeText("No")
+                    .positiveText("Yes")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            AuthUI.getInstance().signOut(BaseActivity.this);
+                            finish();
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .build();
+            dialog.show();
+
             return true;
         }
 
