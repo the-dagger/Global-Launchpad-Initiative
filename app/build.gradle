@@ -50,6 +50,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    prodCompile 'com.google.firebase:firebase-config:10.0.1'
 }
 
 

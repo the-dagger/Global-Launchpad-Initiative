@@ -47,6 +47,15 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
     public MainActivityFragment() {
     }
 
+    public static MainActivityFragment newInstance(int position) {
+
+        Bundle args = new Bundle();
+        args.putInt(ARG_SECTION_NUMBER, position);
+        MainActivityFragment fragment = new MainActivityFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
