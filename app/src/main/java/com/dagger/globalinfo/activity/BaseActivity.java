@@ -23,12 +23,12 @@ import android.widget.Spinner;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.SectionsPagerAdapter;
 import com.dagger.globalinfo.model.InfoObject;
 import com.dagger.globalinfo.service.FetchInfoService;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.firebase.jobdispatcher.Job;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.Trigger;
@@ -38,7 +38,6 @@ import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -54,20 +53,11 @@ public class BaseActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
 
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
-    public static final String EDUCATION = "education";
-    public static final String HACKATHONS = "hackathons";
-    public static final String MEETUPS = "meetups";
-    public static final String TECHNICAL = "technical";
-    public static final String CONTENT = "content";
     private static final int REQUEST_INVITE = 100;
     private static final int RC_SIGN_IN = 123;
-    public static FirebaseAuth auth;
-    public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
 
-    FirebaseJobDispatcher dispatcher;
     ArrayAdapter<String> arrayAdapter;
     String author;
-    FirebaseDatabase firebaseDatabase;
     String category;
     String[] categories = {"Educational", "Hackathons", "Meetups", "Technical Talks"};
     SectionsPagerAdapter mSectionsPagerAdapter;
@@ -93,21 +83,14 @@ public class BaseActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
 
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        eduDbReference = firebaseDatabase.getReference().child(EDUCATION);
-        hackDbReference = firebaseDatabase.getReference().child(HACKATHONS);
-        meetDbReference = firebaseDatabase.getReference().child(MEETUPS);
-        techDbReference = firebaseDatabase.getReference().child(TECHNICAL);
-        contentDbReference = firebaseDatabase.getReference().child(CONTENT);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         tabLayout.setupWithViewPager(mViewPager);
 
-        auth = FirebaseAuth.getInstance();
+        FirebaseAuth auth = GlobalInfoApplication.getAuth();
         if (auth.getCurrentUser() != null) {
             author = auth.getCurrentUser().getDisplayName();
         } else {
@@ -227,7 +210,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        dispatcher.cancelAll();
+        GlobalInfoApplication.getJobDispatcher().cancelAll();
     }
 
     @Override
@@ -237,7 +220,7 @@ public class BaseActivity extends AppCompatActivity {
         final int periodicity = (int) TimeUnit.MINUTES.toSeconds(60); // Every 10 minutes periodicity
         final int toleranceInterval = (int)TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
         Log.e(getClass().getSimpleName(),"Job will execute in" + "or");
-        Job myJob = dispatcher.newJobBuilder()
+        Job myJob = GlobalInfoApplication.getJobDispatcher().newJobBuilder()
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")
                 .setTrigger(Trigger.executionWindow(periodicity, periodicity + toleranceInterval))
@@ -247,7 +230,7 @@ public class BaseActivity extends AppCompatActivity {
                 .setReplaceCurrent(true)
                 .build();
 
-        int result = dispatcher.schedule(myJob);
+        int result = GlobalInfoApplication.getJobDispatcher().schedule(myJob);
         if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
             Log.e(getClass().getSimpleName(),"Error executing task");
         }
@@ -296,25 +279,25 @@ public class BaseActivity extends AppCompatActivity {
                             String formattedDate = df.format(c.getTime());
                             String photoUrl = "";
                             try {
-                                photoUrl = auth.getCurrentUser().getPhotoUrl().toString();
+                                photoUrl = GlobalInfoApplication.getAuth().getCurrentUser().getPhotoUrl().toString();
                             } catch (NullPointerException ignored) {
                             }
                             InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString(),
-                                    desc.getText().toString(), author, category, formattedDate, auth.getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
+                                    desc.getText().toString(), author, category, formattedDate, GlobalInfoApplication.getAuth().getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
 
 
                             switch (category) {
                                 case "Educational":
-                                    pushData(eduDbReference, infoObject);
+                                    pushData(GlobalInfoApplication.getEduDbReference(), infoObject);
                                     break;
                                 case "Hackathons":
-                                    pushData(hackDbReference, infoObject);
+                                    pushData(GlobalInfoApplication.getHackDbReference(), infoObject);
                                     break;
                                 case "Meetups":
-                                    pushData(meetDbReference, infoObject);
+                                    pushData(GlobalInfoApplication.getMeetDbReference(), infoObject);
                                     break;
                                 case "Technical Talks":
-                                    pushData(techDbReference, infoObject);
+                                    pushData(GlobalInfoApplication.getTechDbReference(), infoObject);
                                     break;
                                 default:
                                     Log.e(getClass().getSimpleName(), "Unable to push due to category mismatch");
@@ -329,7 +312,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void pushData(final DatabaseReference reference, final InfoObject infoObject) {
-        final DatabaseReference tempReference = contentDbReference.push();
+        final DatabaseReference tempReference = GlobalInfoApplication.getContentDbReference().push();
         tempReference.setValue(infoObject).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {

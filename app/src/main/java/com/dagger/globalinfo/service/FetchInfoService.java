@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.activity.MainActivity;
 import com.dagger.globalinfo.model.InfoObject;
@@ -17,8 +18,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import static com.dagger.globalinfo.activity.MainActivity.CONTENT;
 
 /**
  * Created by Harshit on 01/01/17.
@@ -36,7 +35,7 @@ public class FetchInfoService extends JobService {
 
     @Override
     public boolean onStartJob(com.firebase.jobdispatcher.JobParameters job) {
-        DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference().child(CONTENT);
+        DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference().child(GlobalInfoApplication.getCONTENT());
 
         //Single to auto remove listener when data is received.
         dbReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -47,11 +46,11 @@ public class FetchInfoService extends JobService {
                 for (DataSnapshot infoDataSnapshot : dataSnapshot.getChildren()) {
                     note = infoDataSnapshot.getValue(InfoObject.class);
                 }
-                SharedPreferences sharedPreferences = getSharedPreferences("com.dagger.globalinfo",MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getSharedPreferences("com.dagger.globalinfo", MODE_PRIVATE);
                 // Check if the key inside sharedpref is the latest one and display notification only if it is not
-                if (!sharedPreferences.getString(KEY,"").equals(note.getEmail().concat(String.valueOf(note.getTimeInMillis())))) {
+                if (!sharedPreferences.getString(KEY, "").equals(note.getEmail().concat(String.valueOf(note.getTimeInMillis())))) {
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                     notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic_update)
                             .setContentTitle(note.getTitle())
