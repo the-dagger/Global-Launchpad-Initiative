@@ -3,6 +3,7 @@ package com.dagger.globalinfo.adapter;
 import android.view.View;
 
 import com.dagger.globalinfo.activity.BaseActivity;
+import com.dagger.globalinfo.activity.MainActivity;
 import com.dagger.globalinfo.model.InfoObject;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.Query;
@@ -27,7 +28,6 @@ public class InfoAdapter extends BaseAdapter {
     @Override
     protected void populateViewHolder(ViewHolder holder, InfoObject model, int position) {
         super.populateViewHolder(holder, model, position);
-        if(BaseActivity.admins.contains(FirebaseAuth.getInstance().getCurrentUser().getEmail()))
-            holder.delete.setVisibility(View.VISIBLE);
+        holder.delete.setVisibility(MainActivity.isAdmin ? View.VISIBLE : View.GONE);
     }
 }

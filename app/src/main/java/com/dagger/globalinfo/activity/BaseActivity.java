@@ -41,7 +41,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -64,13 +63,14 @@ public class BaseActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 123;
     public static FirebaseAuth auth;
     public static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
-    public static ArrayList<String> admins = new ArrayList<>();
+
     FirebaseJobDispatcher dispatcher;
     ArrayAdapter<String> arrayAdapter;
     String author;
     FirebaseDatabase firebaseDatabase;
     String category;
     String[] categories = {"Educational", "Hackathons", "Meetups", "Technical Talks"};
+    SectionsPagerAdapter mSectionsPagerAdapter;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -91,11 +91,9 @@ public class BaseActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
-        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
-
-        addAdmins("manasbagula@gmail.com", "akashshkl01@gmail.com", "singhalsaurabh95@gmail.com");
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         eduDbReference = firebaseDatabase.getReference().child(EDUCATION);
@@ -124,6 +122,7 @@ public class BaseActivity extends AppCompatActivity {
                                     new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build()))
                             .build(),
                     RC_SIGN_IN);
+            return;
         }
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,20 +131,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    public void addAdmins(String... strings) {
-        int i = 0;
-        while (i < strings.length)
-            admins.add(strings[i++]);
-    }
-
-    public void removeAdmins(String... strings) {
-        int i = 0;
-        while (i < strings.length) {
-            if (admins.contains(strings[i]))
-                admins.remove(strings[i++]);
-        }
     }
 
     @Override
