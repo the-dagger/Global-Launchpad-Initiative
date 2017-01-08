@@ -24,7 +24,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by Harshit on 25/12/16.
  */
 
-public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter.ViewHolder> {
+public class BaseAdapter extends FirebaseRecyclerAdapter<InfoObject, BaseAdapter.ViewHolder> {
     public static final String TAG = InfoAdapter.class.getSimpleName();
 
     private ItemCallback callback;
@@ -38,7 +38,7 @@ public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter
      * @param ref             The Firebase location to watch for data changes. Can also be a slice of a location, using some
      *                        combination of {@code limit()}, {@code startAt()}, and {@code endAt()}.
      */
-    public InfoAdapter(Class<InfoObject> modelClass, int modelLayout, Class<ViewHolder> viewHolderClass, Query ref) {
+    public BaseAdapter(Class<InfoObject> modelClass, int modelLayout, Class<ViewHolder> viewHolderClass, Query ref) {
         super(modelClass, modelLayout, viewHolderClass, ref);
         this.modelLayout = modelLayout;
     }
@@ -55,7 +55,23 @@ public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter
 
     @Override
     protected void populateViewHolder(final ViewHolder holder, final InfoObject model, int position) {
-        holder.bind(model);
+        holder.date.setText(model.getTimestamp());
+        holder.description.setText(model.getDescription());
+        holder.title.setText(model.getTitle());
+        try {
+            Picasso.with(holder.itemView.getContext())
+                    .load(model.getPhoto())
+                    .placeholder(R.drawable.default_pic)
+                    .error(R.drawable.default_pic)
+                    .into(holder.author);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Picasso.with(holder.itemView.getContext())
+                    .load(R.drawable.default_pic)
+                    .into(holder.author);
+        }
+        if (model.getAuthor() != null)
+            holder.authorName.setText(model.getAuthor());
     }
 
     public interface ItemCallback {
@@ -101,27 +117,6 @@ public class InfoAdapter extends FirebaseRecyclerAdapter<InfoObject, InfoAdapter
                 InfoObject infoObject = getItem(getAdapterPosition());
                 callback.onDeleteClicked(infoObject, getRef(getAdapterPosition()));
             }
-        }
-
-        void bind(InfoObject model) {
-            date.setText(model.getTimestamp());
-            description.setText(model.getDescription());
-            title.setText(model.getTitle());
-            try {
-                Picasso.with(itemView.getContext())
-                        .load(model.getPhoto())
-                        .placeholder(R.drawable.default_pic)
-                        .error(R.drawable.default_pic)
-                        .into(author);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Picasso.with(itemView.getContext())
-                        .load(R.drawable.default_pic)
-                        .into(author);
-            }
-            if (model.getAuthor() != null)
-                authorName.setText(model.getAuthor());
-            delete.setVisibility(View.VISIBLE);
         }
     }
 }
