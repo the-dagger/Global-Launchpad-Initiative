@@ -21,9 +21,11 @@ android {
         demo {
             applicationIdSuffix ".demo"
             versionNameSuffix "-demo"
+            resValue "string", "app_name", "Global Launchpad Demo"
         }
         prod {
             versionNameSuffix "-prod"
+            resValue "string", "app_name", "Global Launchpad"
         }
     }
 }
