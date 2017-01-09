@@ -11,4 +11,11 @@
     <string name="invite_title">Come Join me in Global Launchpad Initiative</string>
     <string name="invitation_custom_image">http://gravatar.com/avatar/</string>
     <string name="invitation_cta">Download</string>
+    <string name="theme_pref_title">Night Mode</string>
+    <string name="theme_pref_desc">Reduce strain on your eyes by enabling night mode</string>
+    <string name="title_list_preference">Background Sync Interval</string>
+    <string name="dialog_title_list_preference">Time interval for fetching content</string>
+    <string name="list_prev_summary">Change the time interval for fetching content in the background</string>
+    <string name="title_activity_settings">Settings</string>
+
 </resources>

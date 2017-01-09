@@ -1,6 +1,7 @@
 package com.dagger.globalinfo;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -23,6 +24,12 @@ public class GlobalInfoApplication extends Application {
     private static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
     private static FirebaseDatabase firebaseDatabase;
     private static FirebaseJobDispatcher dispatcher;
+
+    public static SharedPreferences getSharedPreferences() {
+        return sharedPreferences;
+    }
+
+    private static SharedPreferences sharedPreferences;
 
     public static FirebaseAuth getAuth() {
         return auth;
@@ -81,7 +88,7 @@ public class GlobalInfoApplication extends Application {
         super.onCreate();
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
-
+        sharedPreferences = getSharedPreferences("com.dagger.globalinfo", MODE_PRIVATE);
         firebaseDatabase = FirebaseDatabase.getInstance();
         eduDbReference = firebaseDatabase.getReference().child(EDUCATION);
         hackDbReference = firebaseDatabase.getReference().child(HACKATHONS);

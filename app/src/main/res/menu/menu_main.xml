@@ -19,5 +19,5 @@
         android:orderInCategory="300"
         android:title="@string/action_settings"
         android:icon="@drawable/ic_settings_white_24dp"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 </menu>
