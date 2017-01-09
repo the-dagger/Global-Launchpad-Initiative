@@ -14,11 +14,10 @@ public class PreferenceActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preference);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getFragmentManager()
+        getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.preference_fragment, new PreferenceFragment())
                 .commit();
