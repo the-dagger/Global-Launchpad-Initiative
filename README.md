@@ -26,9 +26,7 @@ Features :
 
 TODO : 
 ====
-- [ ] Add twitter login.
 - [ ] Add facebook login.
-- [ ] Create a preference screen to manage user profile and enable/disable the background refresh.
 - [ ] Add ability to bookmark a particular resource.
 
 Screenshots :
