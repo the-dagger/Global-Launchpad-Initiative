@@ -8,3 +8,4 @@
 **/.idea/**
 app/src/prod/google-services.json
 app/src/demo/google-services.json
+app/src/main/res/values/apikeys.xml

@@ -13,7 +13,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/url"
-            android:textColor="#80000000"
+            android:textColor="?android:attr/textColorPrimary"
             android:inputType="textUri"
             android:textSize="@dimen/customTitle" />
     </android.support.design.widget.TextInputLayout>
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/title"
             android:maxLength="28"
-            android:textColor="#80000000"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="@dimen/customTitle" />
     </android.support.design.widget.TextInputLayout>
 
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/short_description"
             android:inputType="textMultiLine"
-            android:textColor="#80000000"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="@dimen/customTitle" />
     </android.support.design.widget.TextInputLayout>
 
