@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Settings">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="preferenceTheme"
+            android:summary="@string/theme_pref_desc"
+            android:title="@string/theme_pref_title" />
+
+        <ListPreference
+            android:dialogTitle="@string/dialog_title_list_preference"
+            android:entries="@array/entries_list_preference"
+            android:entryValues="@array/entryvalues_list_preference"
+            android:key="preferenceNotifTime"
+            android:summary="@string/list_prev_summary"
+            android:title="@string/title_list_preference" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="About">
+
+        <Preference
+            android:key="sourceCode"
+            android:summary="Fork the project on github"
+            android:title="Source Code" />
+
+        <Preference
+            android:key="version"
+            android:summary=""
+            android:title="Version" />
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

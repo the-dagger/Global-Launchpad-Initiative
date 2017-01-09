@@ -27,6 +27,7 @@
                 android:maxLines="1"
                 android:paddingBottom="4dp"
                 android:text="Title"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title"
                 android:textSize="24sp" />
 
@@ -57,6 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="4"
                 android:ellipsize="end"
+                android:textColor="?android:attr/textColorPrimary"
                 android:maxLines="4"
                 android:paddingEnd="0dp"
                 android:paddingStart="8dp"
@@ -76,6 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:text="Test date"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textAppearance="@android:style/TextAppearance.Material.Small" />
 
             <TextView
@@ -85,6 +88,7 @@
                 android:layout_toStartOf="@id/date_added"
                 android:textAppearance="@android:style/TextAppearance.Material.Small"
                 android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
                 android:text="Added on : "/>
 
             <TextView
@@ -93,6 +97,7 @@
                 android:layout_alignParentStart="true"
                 android:text="Anonymous"
                 android:id="@+id/author_name"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textAppearance="@android:style/TextAppearance.Material.Small"
                 android:textStyle="bold"/>
 

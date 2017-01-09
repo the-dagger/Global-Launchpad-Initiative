@@ -23,6 +23,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.PreferenceActivity"
+            android:label="Settings"
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/AppTheme.Preference">
+        </activity>
 
         <service
             android:name=".service.FetchInfoService"

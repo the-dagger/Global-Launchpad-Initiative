@@ -10,6 +10,7 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,6 +56,8 @@ public class BaseActivity extends AppCompatActivity {
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     private static final int REQUEST_INVITE = 100;
     private static final int RC_SIGN_IN = 123;
+    private static final int REQUEST_THEME = 345;
+    int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
 
     ArrayAdapter<String> arrayAdapter;
     String author;
@@ -77,13 +80,12 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        if (GlobalInfoApplication.getSharedPreferences().getBoolean("preferenceTheme", false))
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-
 
         // Set up the ViewPager with the sections adapter.
         mViewPager.setAdapter(mSectionsPagerAdapter);
@@ -97,7 +99,7 @@ public class BaseActivity extends AppCompatActivity {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
-                            .setTheme(R.style.AppTheme)
+                            .setTheme(R.style.AppTheme_Preference)
                             .setIsSmartLockEnabled(false)
                             .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                     new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
@@ -138,8 +140,7 @@ public class BaseActivity extends AppCompatActivity {
                 Snackbar.make(root, "No Internet Connection", Snackbar.LENGTH_SHORT).show();
             }
 
-        }
-        if (requestCode == REQUEST_INVITE) {
+        } else if (requestCode == REQUEST_INVITE) {
             Log.e("Result Code", String.valueOf(resultCode));
             if (resultCode == RESULT_OK) {
                 // Get the invitation IDs of all sent messages
@@ -151,6 +152,11 @@ public class BaseActivity extends AppCompatActivity {
                 // Sending failed or it was canceled, show failure message to the user
                 // ...
                 Snackbar.make(root, "Failed to send invite", Snackbar.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == REQUEST_THEME) {
+            if (defaultNightMode != AppCompatDelegate.getDefaultNightMode()) {
+                recreate();
+                defaultNightMode = AppCompatDelegate.getDefaultNightMode();
             }
         }
     }
@@ -167,6 +173,8 @@ public class BaseActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, PreferenceActivity.class);
+            startActivityForResult(intent, REQUEST_THEME);
             return true;
         }
         if (id == R.id.action_share) {
@@ -216,10 +224,15 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        Log.e(getClass().getSimpleName(),"onPause Called");
-        final int periodicity = (int) TimeUnit.MINUTES.toSeconds(60); // Every 10 minutes periodicity
-        final int toleranceInterval = (int)TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
-        Log.e(getClass().getSimpleName(),"Job will execute in" + "or");
+        Log.e(getClass().getSimpleName(), "onPause Called");
+        if (GlobalInfoApplication.getSharedPreferences().getInt("preferenceNotifTime", 60) != 0)
+            scheduleJob(GlobalInfoApplication.getSharedPreferences().getInt("preferenceNotifTime", 60));
+    }
+
+    public void scheduleJob(int preferenceNotifTime) {
+        final int periodicity = (int) TimeUnit.MINUTES.toSeconds(preferenceNotifTime); // Every given minutes periodicity
+        final int toleranceInterval = (int) TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
+        Log.e(getClass().getSimpleName(), "Job will execute in" + periodicity + " or " + periodicity+toleranceInterval);
         Job myJob = GlobalInfoApplication.getJobDispatcher().newJobBuilder()
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")
@@ -232,7 +245,7 @@ public class BaseActivity extends AppCompatActivity {
 
         int result = GlobalInfoApplication.getJobDispatcher().schedule(myJob);
         if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
-            Log.e(getClass().getSimpleName(),"Error executing task");
+            Log.e(getClass().getSimpleName(), "Error executing task");
         }
     }
 
