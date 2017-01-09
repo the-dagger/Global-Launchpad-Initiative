@@ -17,5 +17,4 @@
     <string name="dialog_title_list_preference">Time interval for fetching content</string>
     <string name="list_prev_summary">Change the time interval for fetching content in the background</string>
     <string name="title_activity_settings">Settings</string>
-
 </resources>
