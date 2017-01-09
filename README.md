@@ -34,7 +34,7 @@ TODO :
 Screenshots :
 ====
 ![](https://i.imgur.com/J9WKLCL.png?1)  ![](https://i.imgur.com/nwoscQb.png?1)  ![](https://i.imgur.com/krBQleU.png?1)
-
+![](https://i.imgur.com/eSMfGpi.png?1)  ![](https://i.imgur.com/eAau9Na.png?1)  ![](https://i.imgur.com/1dsMdZH.png?1)  
 Compiling for your own use?
 ====
 Create a project in firebase console, link this project to it and palce the `google-services.json` inside  [app/demo](/app/demo) and [app/prod](/app/prod) directory of the project.
