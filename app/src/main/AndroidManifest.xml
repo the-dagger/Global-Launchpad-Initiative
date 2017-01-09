@@ -26,8 +26,8 @@
         <activity
             android:name=".activity.PreferenceActivity"
             android:label="Settings"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/AppTheme.Preference">
         </activity>
 
         <service

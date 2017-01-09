@@ -56,6 +56,8 @@ public class BaseActivity extends AppCompatActivity {
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     private static final int REQUEST_INVITE = 100;
     private static final int RC_SIGN_IN = 123;
+    private static final int REQUEST_THEME = 345;
+    int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
 
     ArrayAdapter<String> arrayAdapter;
     String author;
@@ -97,7 +99,7 @@ public class BaseActivity extends AppCompatActivity {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
-                            .setTheme(R.style.AppTheme)
+                            .setTheme(R.style.AppTheme_Preference)
                             .setIsSmartLockEnabled(false)
                             .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                     new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
@@ -138,8 +140,7 @@ public class BaseActivity extends AppCompatActivity {
                 Snackbar.make(root, "No Internet Connection", Snackbar.LENGTH_SHORT).show();
             }
 
-        }
-        if (requestCode == REQUEST_INVITE) {
+        } else if (requestCode == REQUEST_INVITE) {
             Log.e("Result Code", String.valueOf(resultCode));
             if (resultCode == RESULT_OK) {
                 // Get the invitation IDs of all sent messages
@@ -151,6 +152,11 @@ public class BaseActivity extends AppCompatActivity {
                 // Sending failed or it was canceled, show failure message to the user
                 // ...
                 Snackbar.make(root, "Failed to send invite", Snackbar.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == REQUEST_THEME) {
+            if (defaultNightMode != AppCompatDelegate.getDefaultNightMode()) {
+                recreate();
+                defaultNightMode = AppCompatDelegate.getDefaultNightMode();
             }
         }
     }
@@ -168,7 +174,7 @@ public class BaseActivity extends AppCompatActivity {
 
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, PreferenceActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_THEME);
             return true;
         }
         if (id == R.id.action_share) {

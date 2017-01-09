@@ -3,7 +3,7 @@
 
     <PreferenceCategory android:title="Settings">
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="preferenceTheme"
             android:summary="@string/theme_pref_desc"
@@ -23,13 +23,13 @@
 
         <Preference
             android:key="sourceCode"
-            android:title="Source Code"
-            android:summary="Fork the project on github" />
+            android:summary="Fork the project on github"
+            android:title="Source Code" />
 
         <Preference
             android:key="version"
-            android:title="Version"
-            android:summary="" />
+            android:summary=""
+            android:title="Version" />
 
 
     </PreferenceCategory>
