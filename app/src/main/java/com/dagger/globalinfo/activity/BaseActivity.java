@@ -3,6 +3,7 @@ package com.dagger.globalinfo.activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -35,11 +36,16 @@ import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.Trigger;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ui.ResultCodes;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -52,12 +58,13 @@ import butterknife.ButterKnife;
 public class BaseActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
-
+    public static int count = 0;
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     private static final int REQUEST_INVITE = 100;
     private static final int RC_SIGN_IN = 123;
     private static final int REQUEST_THEME = 345;
     int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
+    InterstitialAd interstitialAd;
 
     ArrayAdapter<String> arrayAdapter;
     String author;
@@ -87,11 +94,22 @@ public class BaseActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
+        interstitialAd = new InterstitialAd(getApplicationContext());
+        interstitialAd.setAdUnitId(getResources().getString(R.string.banner_ad_unit_id));
+        requestNewInterstitial();
+        interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                requestNewInterstitial();
+            }
+        });
+
         // Set up the ViewPager with the sections adapter.
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         tabLayout.setupWithViewPager(mViewPager);
-
+        Log.d("DeviceID",getDeviceId());
         FirebaseAuth auth = GlobalInfoApplication.getAuth();
         if (auth.getCurrentUser() != null) {
             author = auth.getCurrentUser().getDisplayName();
@@ -99,7 +117,7 @@ public class BaseActivity extends AppCompatActivity {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
-                            .setTheme(R.style.AppTheme_Preference)
+                            .setTheme(R.style.AppTheme)
                             .setIsSmartLockEnabled(false)
                             .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                     new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
@@ -116,6 +134,33 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void requestNewInterstitial(){
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+        interstitialAd.loadAd(adRequest);
+    }
+
+    public static String getMD5(String inputText){
+        String md5 = "";
+        try{
+            MessageDigest digester = MessageDigest.getInstance("MD5");
+            digester.update(inputText.getBytes());
+            md5 = new BigInteger(1, digester.digest()).toString(16);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        return md5;
+    }
+
+
+
+    public String getDeviceId(){
+        String androidID = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+        String deviceID = getMD5(androidID).toUpperCase();
+        return deviceID;
     }
 
     @Override
@@ -190,7 +235,7 @@ public class BaseActivity extends AppCompatActivity {
         }
         if (id == R.id.action_log_out) {
             MaterialDialog dialog = new MaterialDialog.Builder(this)
-                    .title("Do you want to log out?")
+                    .title("Log out?")
                     .negativeText("No")
                     .positiveText("Yes")
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
@@ -219,12 +264,19 @@ public class BaseActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         GlobalInfoApplication.getJobDispatcher().cancelAll();
+        Log.d("AdLoadingStatus", String.valueOf(interstitialAd.isLoading()));
+        Log.d("AdID", String.valueOf(interstitialAd.getAdUnitId()));
+        Log.d("AdLoaded", String.valueOf(interstitialAd.isLoaded()));
+        count++;
+        if (interstitialAd.isLoaded() && count%5 == 0) {
+            interstitialAd.show();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.e(getClass().getSimpleName(), "onPause Called");
+        Log.d(getClass().getSimpleName(), "onPause Called");
         if (GlobalInfoApplication.getSharedPreferences().getInt("preferenceNotifTime", 60) != 0)
             scheduleJob(GlobalInfoApplication.getSharedPreferences().getInt("preferenceNotifTime", 60));
     }
@@ -232,7 +284,7 @@ public class BaseActivity extends AppCompatActivity {
     public void scheduleJob(int preferenceNotifTime) {
         final int periodicity = (int) TimeUnit.MINUTES.toSeconds(preferenceNotifTime); // Every given minutes periodicity
         final int toleranceInterval = (int) TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
-        Log.e(getClass().getSimpleName(), "Job will execute in" + periodicity + " or " + periodicity+toleranceInterval);
+        Log.d(getClass().getSimpleName(), "Job will execute in" + periodicity + " or " + periodicity+toleranceInterval);
         Job myJob = GlobalInfoApplication.getJobDispatcher().newJobBuilder()
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")

@@ -8,5 +8,9 @@
 **/.idea/**
 app/src/prod/google-services.json
 app/src/demo/google-services.json
-/app/src/demo/res/values/apikeys.xml
-/app/src/prod/res/values/apikeys.xml
+app/src/demo/res/values/apikeys.xml
+app/src/prod/res/values/apikeys.xml
+app/src/main/res/values/apikeys.xml
+app/src/demo/res/values/admob.xml
+app/src/prod/res/values/admob.xml
+

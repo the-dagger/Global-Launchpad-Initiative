@@ -56,6 +56,7 @@ public class FetchInfoService extends JobService {
                             .setContentTitle(note.getTitle())
                             .setContentText(note.getDescription())
                             .setContentIntent(pendingIntent)
+                            .setStyle(new NotificationCompat.BigTextStyle().bigText(note.getDescription()))
                             .setAutoCancel(true)
                             .setContentInfo(note.getAuthor());
 
