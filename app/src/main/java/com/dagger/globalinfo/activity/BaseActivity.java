@@ -58,7 +58,6 @@ import butterknife.ButterKnife;
 public class BaseActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
-    public static int count = 0;
     public static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
     private static final int REQUEST_INVITE = 100;
     private static final int RC_SIGN_IN = 123;
@@ -267,8 +266,8 @@ public class BaseActivity extends AppCompatActivity {
         Log.d("AdLoadingStatus", String.valueOf(interstitialAd.isLoading()));
         Log.d("AdID", String.valueOf(interstitialAd.getAdUnitId()));
         Log.d("AdLoaded", String.valueOf(interstitialAd.isLoaded()));
-        count++;
-        if (interstitialAd.isLoaded() && count%5 == 0) {
+        GlobalInfoApplication.incrementCount();
+        if (interstitialAd.isLoaded() && GlobalInfoApplication.getCount()%10 == 0) {
             interstitialAd.show();
         }
     }

@@ -25,6 +25,16 @@ public class GlobalInfoApplication extends Application {
     private static FirebaseDatabase firebaseDatabase;
     private static FirebaseJobDispatcher dispatcher;
 
+    public static int getCount() {
+        return count;
+    }
+
+    public static void incrementCount(){
+        count++;
+    }
+
+    private static int count;
+
     public static SharedPreferences getSharedPreferences() {
         return sharedPreferences;
     }
