@@ -26,7 +26,7 @@ Features :
 
 TODO : 
 ====
-- [ ] Add facebook login.
+- [ ] Allow user to manage his profile (Edit Display Name, update email, add profile pic etc.)
 - [ ] Add ability to bookmark a particular resource.
 
 Screenshots :
