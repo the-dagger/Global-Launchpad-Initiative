@@ -77,7 +77,6 @@ public class BaseActivity extends AppCompatActivity {
     InterstitialAd interstitialAd;
 
     ArrayAdapter<String> arrayAdapter;
-    String author;
     String category;
     String[] categories = {"Educational", "Hackathons", "Meetups", "Technical Talks"};
     SectionsPagerAdapter mSectionsPagerAdapter;
@@ -179,7 +178,7 @@ public class BaseActivity extends AppCompatActivity {
         Log.d("DeviceID", getDeviceId());
         FirebaseAuth auth = GlobalInfoApplication.getAuth();
         if (auth.getCurrentUser() != null) {
-            author = auth.getCurrentUser().getDisplayName();
+            Log.e(TAG, String.valueOf(auth.getCurrentUser().getPhotoUrl()));
             Picasso.with(this).load(auth.getCurrentUser().getPhotoUrl()).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(profileImage);
         } else {
             startActivityForResult(
@@ -421,7 +420,7 @@ public class BaseActivity extends AppCompatActivity {
                             } catch (NullPointerException ignored) {
                             }
                             InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString().trim(),
-                                    desc.getText().toString(), author, category, formattedDate, GlobalInfoApplication.getAuth().getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
+                                    desc.getText().toString(), GlobalInfoApplication.getAuth().getCurrentUser().getDisplayName(), category, formattedDate, GlobalInfoApplication.getAuth().getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
 
 
                             switch (category) {
