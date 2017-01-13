@@ -26,6 +26,7 @@ android {
         }
         prod {
             versionNameSuffix "-prod"
+            versionNameSuffix "-prod"
             resValue "string", "app_name", "Global Launchpad"
         }
     }
@@ -58,10 +59,5 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     prodCompile 'com.google.firebase:firebase-config:10.0.1'
 }
-
-
-
-
-
 
 apply plugin: 'com.google.gms.google-services'

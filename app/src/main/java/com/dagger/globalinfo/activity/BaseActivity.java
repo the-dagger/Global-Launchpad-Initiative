@@ -73,7 +73,7 @@ public class BaseActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 123;
     private static final int REQUEST_THEME = 345;
     private static final int IMG_RESULT = 420;
-    int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
+    int defaultNightMode;
     InterstitialAd interstitialAd;
 
     ArrayAdapter<String> arrayAdapter;
@@ -101,11 +101,11 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (GlobalInfoApplication.getSharedPreferences().getBoolean("preferenceTheme", false))
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         ButterKnife.bind(this);
         ButterKnife.bind(profileImage, toolbar);
         setSupportActionBar(toolbar);
+
+        defaultNightMode = AppCompatDelegate.getDefaultNightMode();
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         interstitialAd = new InterstitialAd(getApplicationContext());
@@ -185,7 +185,7 @@ public class BaseActivity extends AppCompatActivity {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
-                            .setTheme(R.style.AppTheme)
+                            .setTheme(R.style.AppTheme_Preference)
                             .setIsSmartLockEnabled(false)
                             .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                     new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
@@ -270,9 +270,10 @@ public class BaseActivity extends AppCompatActivity {
                 defaultNightMode = AppCompatDelegate.getDefaultNightMode();
             }
         } else if (requestCode == IMG_RESULT && data!=null){
-            Uri URI = data.getData();
+            updatedPhotoURI = data.getData();
+            Log.d("URICamera", String.valueOf(updatedPhotoURI));
             ImageView updatedProfile = ButterKnife.findById(profileView,R.id.userImage);
-            Picasso.with(this).load(URI).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(updatedProfile);
+            Picasso.with(this).load(updatedPhotoURI).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(updatedProfile);
         }
     }
 
@@ -300,7 +301,7 @@ public class BaseActivity extends AppCompatActivity {
                     .setCallToActionText(getString(R.string.invitation_cta))
                     .build();
             startActivityForResult(intent, REQUEST_INVITE);
-            Log.e("Invite sending", "true");
+            Log.d("Invite sending", "true");
             return true;
         }
         if (id == R.id.action_log_out) {
@@ -313,6 +314,7 @@ public class BaseActivity extends AppCompatActivity {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             AuthUI.getInstance().signOut(BaseActivity.this);
+                            startActivity(new Intent(BaseActivity.this,MainActivity.class));
                             finish();
                         }
                     })
@@ -360,7 +362,6 @@ public class BaseActivity extends AppCompatActivity {
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")
                 .setTrigger(Trigger.executionWindow(periodicity, periodicity + toleranceInterval))
-//                .setTrigger(Trigger.executionWindow(60,75))
                 .setLifetime(Lifetime.FOREVER)
                 .setRecurring(true)
                 .setReplaceCurrent(true)
@@ -454,13 +455,20 @@ public class BaseActivity extends AppCompatActivity {
                     .setDisplayName(firstName + " " + lastName)
                     .setPhotoUri(imageUri)
                     .build();
-
+            Log.d("PushURI", String.valueOf(imageUri));
             user.updateProfile(profileUpdates)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                Snackbar.make(findViewById(android.R.id.content),"Profile Updated",Snackbar.LENGTH_LONG).show();
+                                Snackbar.make(findViewById(R.id.fab),"Profile updated, please login again to view changes",Snackbar.LENGTH_LONG).setAction("Login", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        AuthUI.getInstance().signOut(BaseActivity.this);
+                                        startActivity(new Intent(BaseActivity.this,MainActivity.class));
+                                        finish();
+                                    }
+                                }).show();
                                 Log.d(TAG, "User profile updated.");
                             }
                         }

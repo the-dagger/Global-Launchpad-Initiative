@@ -2,6 +2,7 @@ package com.dagger.globalinfo;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.support.v7.app.AppCompatDelegate;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -105,7 +106,9 @@ public class GlobalInfoApplication extends Application {
         meetDbReference = firebaseDatabase.getReference().child(MEETUPS);
         techDbReference = firebaseDatabase.getReference().child(TECHNICAL);
         contentDbReference = firebaseDatabase.getReference().child(CONTENT);
-
+        if (GlobalInfoApplication.getSharedPreferences().getBoolean("preferenceTheme", false)){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
         auth = FirebaseAuth.getInstance();
     }
 }
