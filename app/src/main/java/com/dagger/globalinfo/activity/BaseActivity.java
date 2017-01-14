@@ -1,11 +1,11 @@
 package com.dagger.globalinfo.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -49,6 +49,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.math.BigInteger;
@@ -75,13 +76,12 @@ public class BaseActivity extends AppCompatActivity {
     private static final int IMG_RESULT = 420;
     int defaultNightMode;
     InterstitialAd interstitialAd;
-
+    Uri photoUriFromCamera, userImageUri;
     ArrayAdapter<String> arrayAdapter;
     String category;
     String[] categories = {"Educational", "Hackathons", "Meetups", "Technical Talks"};
     SectionsPagerAdapter mSectionsPagerAdapter;
     View profileView;
-    Uri updatedPhotoURI;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -132,18 +132,8 @@ public class BaseActivity extends AppCompatActivity {
                 final EditText email = ButterKnife.findById(profileView, R.id.email);
                 ImageView upload = ButterKnife.findById(profileView, R.id.imagePicker);
 
-                upload.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent intent = new Intent(Intent.ACTION_PICK,
-                                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(intent, IMG_RESULT);
-                    }
-                });
-
                 FirebaseUser user = GlobalInfoApplication.getAuth().getCurrentUser();
                 if (user != null) {
-                    updatedPhotoURI = user.getPhotoUrl();
                     String[] fullName = new String[2];
                     try {
                         fullName = user.getDisplayName().split(" ");
@@ -157,6 +147,14 @@ public class BaseActivity extends AppCompatActivity {
                     Picasso.with(BaseActivity.this).load(user.getPhotoUrl()).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(profilePic);
                     email.setText(user.getEmail());
                 }
+                upload.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(Intent.ACTION_PICK,
+                                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        startActivityForResult(intent, IMG_RESULT);
+                    }
+                });
                 MaterialDialog materialDialog = new MaterialDialog.Builder(BaseActivity.this)
                         .customView(profileView, true)
                         .positiveText("Update")
@@ -166,7 +164,8 @@ public class BaseActivity extends AppCompatActivity {
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                updateProfile(fName.getText().toString(),lName.getText().toString(),email.getText().toString(),updatedPhotoURI);
+                                userImageUri = GlobalInfoApplication.getAuth().getCurrentUser().getPhotoUrl();
+                                updateProfile(fName.getText().toString(),lName.getText().toString(),email.getText().toString());
                             }
                         })
                         .build();
@@ -270,11 +269,11 @@ public class BaseActivity extends AppCompatActivity {
                 defaultNightMode = AppCompatDelegate.getDefaultNightMode();
             }
         } else if (requestCode == IMG_RESULT && data!=null){
-            updatedPhotoURI = data.getData();
-            Log.d("URICamera", String.valueOf(updatedPhotoURI));
             ImageView updatedProfile = ButterKnife.findById(profileView,R.id.userImage);
-            Picasso.with(this).load(updatedPhotoURI).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(updatedProfile);
-        }
+            photoUriFromCamera = data.getData();
+            Log.d("URICamera", String.valueOf(photoUriFromCamera));
+            Picasso.with(BaseActivity.this).load(photoUriFromCamera).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(updatedProfile);
+         }
     }
 
     @Override
@@ -338,7 +337,6 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         GlobalInfoApplication.getJobDispatcher().cancelAll();
         Log.d("AdLoadingStatus", String.valueOf(interstitialAd.isLoading()));
-        Log.d("AdID", String.valueOf(interstitialAd.getAdUnitId()));
         Log.d("AdLoaded", String.valueOf(interstitialAd.isLoaded()));
         GlobalInfoApplication.incrementCount();
         if (interstitialAd.isLoaded() && GlobalInfoApplication.getCount() % 10 == 0) {
@@ -448,32 +446,49 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    private void updateProfile(String firstName, String lastName, String email, @Nullable Uri imageUri) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                    .setDisplayName(firstName + " " + lastName)
-                    .setPhotoUri(imageUri)
-                    .build();
-            Log.d("PushURI", String.valueOf(imageUri));
-            user.updateProfile(profileUpdates)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Snackbar.make(findViewById(R.id.fab),"Profile updated, please login again to view changes",Snackbar.LENGTH_LONG).setAction("Login", new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        AuthUI.getInstance().signOut(BaseActivity.this);
-                                        startActivity(new Intent(BaseActivity.this,MainActivity.class));
-                                        finish();
+    private void updateProfile(final String firstName, final String lastName, final String email) {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Updating Profile");
+        progressDialog.setMessage("Please wait ...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (photoUriFromCamera != null){
+            GlobalInfoApplication.getFirebaseStorage().getReference(GlobalInfoApplication
+                    .getAuth()
+                    .getCurrentUser()
+                    .getUid())
+                    .putFile(photoUriFromCamera).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    userImageUri = taskSnapshot.getDownloadUrl();
+                    Log.e("userImageUri", String.valueOf(userImageUri));
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(firstName + " " + lastName)
+                            .setPhotoUri(userImageUri)
+                            .build();
+                    Log.d("PushURI", String.valueOf(userImageUri));
+                    user.updateProfile(profileUpdates)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Snackbar.make(findViewById(R.id.fab),"Profile updated, please login again to view changes",Snackbar.LENGTH_LONG).setAction("Login", new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                AuthUI.getInstance().signOut(BaseActivity.this);
+                                                startActivity(new Intent(BaseActivity.this,MainActivity.class));
+                                                finish();
+                                            }
+                                        }).show();
+                                        Log.d(TAG, "User profile updated.");
+                                        progressDialog.dismiss();
                                     }
-                                }).show();
-                                Log.d(TAG, "User profile updated.");
-                            }
-                        }
-                    });
-            user.updateEmail(email);
+                                }
+                            });
+                    user.updateEmail(email);
+                }
+            });
         }
     }
 

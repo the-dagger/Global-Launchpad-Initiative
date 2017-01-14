@@ -9,6 +9,7 @@ import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
 
 /**
  * Created by Harshit on 06/01/17.
@@ -22,6 +23,17 @@ public class GlobalInfoApplication extends Application {
     private static final String TECHNICAL = "technical";
     private static final String CONTENT = "content";
     private static FirebaseAuth auth;
+    private static int count;
+
+    public static FirebaseStorage getFirebaseStorage() {
+        return firebaseStorage;
+    }
+
+    public static void setFirebaseStorage(FirebaseStorage firebaseStorage) {
+        GlobalInfoApplication.firebaseStorage = firebaseStorage;
+    }
+
+    private static FirebaseStorage firebaseStorage;
     private static DatabaseReference eduDbReference, hackDbReference, meetDbReference, techDbReference, contentDbReference;
     private static FirebaseDatabase firebaseDatabase;
     private static FirebaseJobDispatcher dispatcher;
@@ -33,8 +45,6 @@ public class GlobalInfoApplication extends Application {
     public static void incrementCount(){
         count++;
     }
-
-    private static int count;
 
     public static SharedPreferences getSharedPreferences() {
         return sharedPreferences;
@@ -106,6 +116,7 @@ public class GlobalInfoApplication extends Application {
         meetDbReference = firebaseDatabase.getReference().child(MEETUPS);
         techDbReference = firebaseDatabase.getReference().child(TECHNICAL);
         contentDbReference = firebaseDatabase.getReference().child(CONTENT);
+        firebaseStorage = FirebaseStorage.getInstance();
         if (GlobalInfoApplication.getSharedPreferences().getBoolean("preferenceTheme", false)){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         }
