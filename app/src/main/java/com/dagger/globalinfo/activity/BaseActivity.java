@@ -165,7 +165,7 @@ public class BaseActivity extends AppCompatActivity {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 userImageUri = GlobalInfoApplication.getAuth().getCurrentUser().getPhotoUrl();
-                                updateProfile(fName.getText().toString(),lName.getText().toString(),email.getText().toString());
+                                updateProfile(fName.getText().toString(), lName.getText().toString(), email.getText().toString());
                             }
                         })
                         .build();
@@ -268,12 +268,12 @@ public class BaseActivity extends AppCompatActivity {
                 recreate();
                 defaultNightMode = AppCompatDelegate.getDefaultNightMode();
             }
-        } else if (requestCode == IMG_RESULT && data!=null){
-            ImageView updatedProfile = ButterKnife.findById(profileView,R.id.userImage);
+        } else if (requestCode == IMG_RESULT && data != null) {
+            ImageView updatedProfile = ButterKnife.findById(profileView, R.id.userImage);
             photoUriFromCamera = data.getData();
             Log.d("URICamera", String.valueOf(photoUriFromCamera));
             Picasso.with(BaseActivity.this).load(photoUriFromCamera).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(updatedProfile);
-         }
+        }
     }
 
     @Override
@@ -313,7 +313,7 @@ public class BaseActivity extends AppCompatActivity {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             AuthUI.getInstance().signOut(BaseActivity.this);
-                            startActivity(new Intent(BaseActivity.this,MainActivity.class));
+                            startActivity(new Intent(BaseActivity.this, MainActivity.class));
                             finish();
                         }
                     })
@@ -453,7 +453,7 @@ public class BaseActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         progressDialog.show();
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (photoUriFromCamera != null){
+        if (photoUriFromCamera != null) {
             GlobalInfoApplication.getFirebaseStorage().getReference(GlobalInfoApplication
                     .getAuth()
                     .getCurrentUser()
@@ -473,11 +473,11 @@ public class BaseActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        Snackbar.make(findViewById(R.id.fab),"Profile updated, please login again to view changes",Snackbar.LENGTH_LONG).setAction("Login", new View.OnClickListener() {
+                                        Snackbar.make(findViewById(R.id.fab), "Profile updated, please login again to view changes", Snackbar.LENGTH_LONG).setAction("Login", new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
                                                 AuthUI.getInstance().signOut(BaseActivity.this);
-                                                startActivity(new Intent(BaseActivity.this,MainActivity.class));
+                                                startActivity(new Intent(BaseActivity.this, MainActivity.class));
                                                 finish();
                                             }
                                         }).show();

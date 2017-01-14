@@ -42,7 +42,7 @@ public class GlobalInfoApplication extends Application {
         return count;
     }
 
-    public static void incrementCount(){
+    public static void incrementCount() {
         count++;
     }
 
@@ -117,7 +117,7 @@ public class GlobalInfoApplication extends Application {
         techDbReference = firebaseDatabase.getReference().child(TECHNICAL);
         contentDbReference = firebaseDatabase.getReference().child(CONTENT);
         firebaseStorage = FirebaseStorage.getInstance();
-        if (GlobalInfoApplication.getSharedPreferences().getBoolean("preferenceTheme", false)){
+        if (GlobalInfoApplication.getSharedPreferences().getBoolean("preferenceTheme", false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         }
         auth = FirebaseAuth.getInstance();
