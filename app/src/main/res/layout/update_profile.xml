@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="120dp"
+            android:padding="8dp"
+            android:layout_gravity="center"
+            android:layout_height="120dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/userImage"
+                android:layout_width="match_parent"
+                android:src="@drawable/default_pic"
+                android:layout_height="match_parent" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/upload"
+                android:id="@+id/imagePicker"/>
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:orientation="vertical">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/firstName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/first_name"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:inputType="textPersonName"
+                    android:textSize="@dimen/customTitle" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/lastName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/last_name"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:inputType="textPersonName"
+                    android:textSize="@dimen/customTitle" />
+            </android.support.design.widget.TextInputLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:padding="8dp"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/email"
+            android:textColor="?android:attr/textColorPrimary"
+            android:inputType="textEmailAddress"
+            android:textSize="@dimen/customTitle" />
+    </android.support.design.widget.TextInputLayout>
+
+</LinearLayout>

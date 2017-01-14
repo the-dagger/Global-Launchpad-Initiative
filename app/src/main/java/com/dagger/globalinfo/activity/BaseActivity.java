@@ -1,5 +1,6 @@
 package com.dagger.globalinfo.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -40,9 +42,15 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.appinvite.AppInviteInvitation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -54,6 +62,9 @@ import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.dagger.globalinfo.R.id.firstName;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -62,14 +73,15 @@ public class BaseActivity extends AppCompatActivity {
     private static final int REQUEST_INVITE = 100;
     private static final int RC_SIGN_IN = 123;
     private static final int REQUEST_THEME = 345;
-    int defaultNightMode = AppCompatDelegate.getDefaultNightMode();
+    private static final int IMG_RESULT = 420;
+    int defaultNightMode;
     InterstitialAd interstitialAd;
-
+    Uri photoUriFromCamera, userImageUri;
     ArrayAdapter<String> arrayAdapter;
-    String author;
     String category;
     String[] categories = {"Educational", "Hackathons", "Meetups", "Technical Talks"};
     SectionsPagerAdapter mSectionsPagerAdapter;
+    View profileView;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -81,16 +93,18 @@ public class BaseActivity extends AppCompatActivity {
     FloatingActionButton fab;
     @BindView(R.id.main_content)
     CoordinatorLayout root;
+    @BindView(R.id.profileImage)
+    CircleImageView profileImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (GlobalInfoApplication.getSharedPreferences().getBoolean("preferenceTheme", false))
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         ButterKnife.bind(this);
-
+        ButterKnife.bind(profileImage, toolbar);
         setSupportActionBar(toolbar);
+
+        defaultNightMode = AppCompatDelegate.getDefaultNightMode();
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         interstitialAd = new InterstitialAd(getApplicationContext());
@@ -106,17 +120,71 @@ public class BaseActivity extends AppCompatActivity {
 
         // Set up the ViewPager with the sections adapter.
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        profileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                profileView = LayoutInflater.from(BaseActivity.this).inflate(R.layout.update_profile, null);
+                CircleImageView profilePic = ButterKnife.findById(profileView, R.id.userImage);
+                final EditText fName = ButterKnife.findById(profileView, firstName);
+                final EditText lName = ButterKnife.findById(profileView, R.id.lastName);
+                final EditText email = ButterKnife.findById(profileView, R.id.email);
+                ImageView upload = ButterKnife.findById(profileView, R.id.imagePicker);
+
+                FirebaseUser user = GlobalInfoApplication.getAuth().getCurrentUser();
+                if (user != null) {
+                    String[] fullName = new String[2];
+                    try {
+                        fullName = user.getDisplayName().split(" ");
+                    } catch (Exception e) {
+                        fullName[0] = "";
+                        fullName[1] = "";
+                        e.printStackTrace();
+                    }
+                    fName.setText(fullName[0]);
+                    lName.setText(fullName[1]);
+                    Picasso.with(BaseActivity.this).load(user.getPhotoUrl()).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(profilePic);
+                    email.setText(user.getEmail());
+                }
+                upload.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(Intent.ACTION_PICK,
+                                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        startActivityForResult(intent, IMG_RESULT);
+                    }
+                });
+                MaterialDialog materialDialog = new MaterialDialog.Builder(BaseActivity.this)
+                        .customView(profileView, true)
+                        .positiveText("Update")
+                        .title("Update Your Profile")
+                        .cancelable(false)
+                        .negativeText("Cancel")
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                userImageUri = GlobalInfoApplication.getAuth().getCurrentUser().getPhotoUrl();
+                                updateProfile(fName.getText().toString(), lName.getText().toString(), email.getText().toString());
+                            }
+                        })
+                        .build();
+                materialDialog.show();
+            }
+        });
 
         tabLayout.setupWithViewPager(mViewPager);
-        Log.d("DeviceID",getDeviceId());
+        Log.d("DeviceID", getDeviceId());
         FirebaseAuth auth = GlobalInfoApplication.getAuth();
         if (auth.getCurrentUser() != null) {
-            author = auth.getCurrentUser().getDisplayName();
+            Log.e(TAG, String.valueOf(auth.getCurrentUser().getPhotoUrl()));
+            Picasso.with(this).load(auth.getCurrentUser().getPhotoUrl()).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(profileImage);
         } else {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
-                            .setTheme(R.style.AppTheme)
+                            .setTheme(R.style.AppTheme_Preference)
+                            .setLogo(R.drawable.logo_bg)
                             .setIsSmartLockEnabled(false)
                             .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                     new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
@@ -135,29 +203,27 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    private void requestNewInterstitial(){
+    private void requestNewInterstitial() {
         AdRequest adRequest = new AdRequest.Builder()
                 .build();
         interstitialAd.loadAd(adRequest);
     }
 
-    public static String getMD5(String inputText){
+    public static String getMD5(String inputText) {
         String md5 = "";
-        try{
+        try {
             MessageDigest digester = MessageDigest.getInstance("MD5");
             digester.update(inputText.getBytes());
             md5 = new BigInteger(1, digester.digest()).toString(16);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return md5;
     }
 
 
-
-    public String getDeviceId(){
-        String androidID = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+    public String getDeviceId() {
+        String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         String deviceID = getMD5(androidID).toUpperCase();
         return deviceID;
     }
@@ -202,6 +268,11 @@ public class BaseActivity extends AppCompatActivity {
                 recreate();
                 defaultNightMode = AppCompatDelegate.getDefaultNightMode();
             }
+        } else if (requestCode == IMG_RESULT && data != null) {
+            ImageView updatedProfile = ButterKnife.findById(profileView, R.id.userImage);
+            photoUriFromCamera = data.getData();
+            Log.d("URICamera", String.valueOf(photoUriFromCamera));
+            Picasso.with(BaseActivity.this).load(photoUriFromCamera).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(updatedProfile);
         }
     }
 
@@ -229,18 +300,20 @@ public class BaseActivity extends AppCompatActivity {
                     .setCallToActionText(getString(R.string.invitation_cta))
                     .build();
             startActivityForResult(intent, REQUEST_INVITE);
-            Log.e("Invite sending", "true");
+            Log.d("Invite sending", "true");
             return true;
         }
         if (id == R.id.action_log_out) {
             MaterialDialog dialog = new MaterialDialog.Builder(this)
                     .title("Log out?")
+                    .content("Do you want to log out?")
                     .negativeText("No")
                     .positiveText("Yes")
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             AuthUI.getInstance().signOut(BaseActivity.this);
+                            startActivity(new Intent(BaseActivity.this, MainActivity.class));
                             finish();
                         }
                     })
@@ -264,10 +337,9 @@ public class BaseActivity extends AppCompatActivity {
         super.onResume();
         GlobalInfoApplication.getJobDispatcher().cancelAll();
         Log.d("AdLoadingStatus", String.valueOf(interstitialAd.isLoading()));
-        Log.d("AdID", String.valueOf(interstitialAd.getAdUnitId()));
         Log.d("AdLoaded", String.valueOf(interstitialAd.isLoaded()));
         GlobalInfoApplication.incrementCount();
-        if (interstitialAd.isLoaded() && GlobalInfoApplication.getCount()%10 == 0) {
+        if (interstitialAd.isLoaded() && GlobalInfoApplication.getCount() % 10 == 0) {
             interstitialAd.show();
         }
     }
@@ -283,12 +355,11 @@ public class BaseActivity extends AppCompatActivity {
     public void scheduleJob(int preferenceNotifTime) {
         final int periodicity = (int) TimeUnit.MINUTES.toSeconds(preferenceNotifTime); // Every given minutes periodicity
         final int toleranceInterval = (int) TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
-        Log.d(getClass().getSimpleName(), "Job will execute in" + periodicity + " or " + periodicity+toleranceInterval);
+        Log.d(getClass().getSimpleName(), "Job will execute in" + periodicity + " or " + periodicity + toleranceInterval);
         Job myJob = GlobalInfoApplication.getJobDispatcher().newJobBuilder()
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")
                 .setTrigger(Trigger.executionWindow(periodicity, periodicity + toleranceInterval))
-//                .setTrigger(Trigger.executionWindow(60,75))
                 .setLifetime(Lifetime.FOREVER)
                 .setRecurring(true)
                 .setReplaceCurrent(true)
@@ -346,8 +417,8 @@ public class BaseActivity extends AppCompatActivity {
                                 photoUrl = GlobalInfoApplication.getAuth().getCurrentUser().getPhotoUrl().toString();
                             } catch (NullPointerException ignored) {
                             }
-                            InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString(),
-                                    desc.getText().toString(), author, category, formattedDate, GlobalInfoApplication.getAuth().getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
+                            InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString().trim(),
+                                    desc.getText().toString(), GlobalInfoApplication.getAuth().getCurrentUser().getDisplayName(), category, formattedDate, GlobalInfoApplication.getAuth().getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
 
 
                             switch (category) {
@@ -373,6 +444,52 @@ public class BaseActivity extends AppCompatActivity {
 
         dialog.show();
 
+    }
+
+    private void updateProfile(final String firstName, final String lastName, final String email) {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Updating Profile");
+        progressDialog.setMessage("Please wait ...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (photoUriFromCamera != null) {
+            GlobalInfoApplication.getFirebaseStorage().getReference(GlobalInfoApplication
+                    .getAuth()
+                    .getCurrentUser()
+                    .getUid())
+                    .putFile(photoUriFromCamera).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    userImageUri = taskSnapshot.getDownloadUrl();
+                    Log.e("userImageUri", String.valueOf(userImageUri));
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(firstName + " " + lastName)
+                            .setPhotoUri(userImageUri)
+                            .build();
+                    Log.d("PushURI", String.valueOf(userImageUri));
+                    user.updateProfile(profileUpdates)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Snackbar.make(findViewById(R.id.fab), "Profile updated, please login again to view changes", Snackbar.LENGTH_LONG).setAction("Login", new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                AuthUI.getInstance().signOut(BaseActivity.this);
+                                                startActivity(new Intent(BaseActivity.this, MainActivity.class));
+                                                finish();
+                                            }
+                                        }).show();
+                                        Log.d(TAG, "User profile updated.");
+                                        progressDialog.dismiss();
+                                    }
+                                }
+                            });
+                    user.updateEmail(email);
+                }
+            });
+        }
     }
 
     private void pushData(final DatabaseReference reference, final InfoObject infoObject) {

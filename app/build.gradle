@@ -1,6 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
+    dexOptions {
+        jumboMode = true
+    }
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
@@ -15,6 +18,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -25,6 +29,7 @@ android {
             resValue "string", "app_name", "Global Launchpad Demo"
         }
         prod {
+            versionNameSuffix "-prod"
             versionNameSuffix "-prod"
             resValue "string", "app_name", "Global Launchpad"
         }
@@ -40,11 +45,7 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.android.support:customtabs:25.1.0'
     compile 'com.afollestad.material-dialogs:core:0.9.1.0'
-    compile 'com.firebaseui:firebase-ui-auth:1.0.1'
-    compile 'com.firebaseui:firebase-ui-database:1.0.1'
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    compile 'com.android.support:design:25.1.0'
-    compile 'com.google.firebase:firebase-database:10.0.1'
+    compile 'com.firebaseui:firebase-ui:1.1.0'
     compile 'com.google.firebase:firebase-invites:10.0.1'
     compile 'com.google.firebase:firebase-crash:10.0.1'
     compile 'com.google.firebase:firebase-messaging:10.0.1'
@@ -52,16 +53,13 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.4.0'
     compile 'com.android.support:support-v4:25.1.0'
     compile 'com.android.support:support-vector-drawable:25.1.0'
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:design:25.1.0'
     compile 'com.takisoft.fix:preference-v7:25.0.1.0'
     compile 'com.google.firebase:firebase-ads:10.0.1'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     prodCompile 'com.google.firebase:firebase-config:10.0.1'
 }
-
-
-
-
-
 
 apply plugin: 'com.google.gms.google-services'
