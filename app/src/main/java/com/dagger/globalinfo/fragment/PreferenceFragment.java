@@ -1,5 +1,6 @@
 package com.dagger.globalinfo.fragment;
 
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,15 +16,20 @@ import android.view.ViewGroup;
 
 import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
+import com.dagger.globalinfo.di.activity.ActivityComponent;
+import com.dagger.globalinfo.di.activity.DaggerActivityComponent;
 import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat;
 import com.takisoft.fix.support.v7.preference.SwitchPreferenceCompat;
+
+import javax.inject.Inject;
 
 /**
  * Created by Harshit on 09/01/17.
  */
 
 public class PreferenceFragment extends PreferenceFragmentCompat {
-
+    @Inject
+    SharedPreferences preferences;
 
     @Override
     public void onCreatePreferencesFix(@Nullable Bundle savedInstanceState, String rootKey) {
@@ -32,12 +38,16 @@ public class PreferenceFragment extends PreferenceFragmentCompat {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ActivityComponent component = DaggerActivityComponent.builder()
+                .applicationComponent(GlobalInfoApplication.get(getContext()).getComponent())
+                .build();
+        component.inject(this);
         SwitchPreferenceCompat nightMode = (SwitchPreferenceCompat) getPreferenceManager().findPreference("preferenceTheme");
         nightMode.setOnPreferenceChangeListener(new android.support.v7.preference.Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(android.support.v7.preference.Preference preference, Object o) {
 
-                GlobalInfoApplication.getSharedPreferences().edit().putBoolean("preferenceTheme", (Boolean) o).apply();
+                preferences.edit().putBoolean("preferenceTheme", (Boolean) o).apply();
                 if ((boolean) o) {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                     getActivity().recreate();
@@ -56,7 +66,7 @@ public class PreferenceFragment extends PreferenceFragmentCompat {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 Integer frequency = Integer.valueOf(o.toString());
-                GlobalInfoApplication.getSharedPreferences().edit().putInt("preferenceNotifTime", frequency).apply();
+                preferences.edit().putInt("preferenceNotifTime", frequency).apply();
                 return true;
             }
         });

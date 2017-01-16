@@ -21,8 +21,15 @@ import android.view.ViewGroup;
 import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.InfoAdapter;
+import com.dagger.globalinfo.di.activity.ActivityComponent;
+import com.dagger.globalinfo.di.activity.ActivityModule;
+import com.dagger.globalinfo.di.activity.DaggerActivityComponent;
+import com.dagger.globalinfo.di.application.ApplicationComponent;
+import com.dagger.globalinfo.di.qualifiers.Content;
 import com.dagger.globalinfo.model.InfoObject;
 import com.google.firebase.database.DatabaseReference;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,7 +44,10 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
     RecyclerView recyclerView;
     @BindView(R.id.swipe_refresh)
     SwipeRefreshLayout swipeRefreshLayout;
-    private InfoAdapter infoAdapter;
+    InfoAdapter infoAdapter;
+    @Inject
+    @Content
+    DatabaseReference contentReference;
     private Unbinder unbinder;
 
     public MainActivityFragment() {
@@ -58,6 +68,13 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         unbinder = ButterKnife.bind(this, rootView);
+
+        ApplicationComponent applicationComponent = GlobalInfoApplication.get(getContext()).getComponent();
+        ActivityComponent component = DaggerActivityComponent.builder()
+                .activityModule(new ActivityModule(getCurrReference()))
+                .applicationComponent(applicationComponent)
+                .build();
+        component.inject(this);
 
         swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(getContext(), R.color.colorAccent));
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
@@ -100,15 +117,16 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
 
     private DatabaseReference getCurrReference() {
         int position = getArguments().getInt(ARG_SECTION_NUMBER);
+        ApplicationComponent applicationComponent = GlobalInfoApplication.get(getContext()).getComponent();
         switch (position) {
             case 0:
-                return GlobalInfoApplication.getEduDbReference();
+                return applicationComponent.educationReference();
             case 1:
-                return GlobalInfoApplication.getHackDbReference();
+                return applicationComponent.hackReference();
             case 2:
-                return GlobalInfoApplication.getMeetDbReference();
+                return applicationComponent.meetReference();
             case 3:
-                return GlobalInfoApplication.getTechDbReference();
+                return applicationComponent.technicalReference();
             default:
                 return null;
         }
@@ -149,7 +167,7 @@ public class MainActivityFragment extends Fragment implements InfoAdapter.ItemCa
         String contentKey = infoObject.getContentKey();
         //Backport check.
         if (!TextUtils.isEmpty(contentKey)) {
-            GlobalInfoApplication.getContentDbReference().child(contentKey).removeValue();
+            contentReference.child(contentKey).removeValue();
         }
         databaseReference.removeValue();
     }

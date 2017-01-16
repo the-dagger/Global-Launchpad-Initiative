@@ -2,6 +2,7 @@ package com.dagger.globalinfo.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -30,6 +31,11 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.SectionsPagerAdapter;
+import com.dagger.globalinfo.di.qualifiers.Content;
+import com.dagger.globalinfo.di.qualifiers.Education;
+import com.dagger.globalinfo.di.qualifiers.Hack;
+import com.dagger.globalinfo.di.qualifiers.Meet;
+import com.dagger.globalinfo.di.qualifiers.Technical;
 import com.dagger.globalinfo.model.InfoObject;
 import com.dagger.globalinfo.service.FetchInfoService;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
@@ -49,6 +55,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
@@ -59,6 +66,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -83,6 +92,33 @@ public class BaseActivity extends AppCompatActivity {
     SectionsPagerAdapter mSectionsPagerAdapter;
     View profileView;
 
+    //    @Inject FirebaseAuth firebaseAuth;
+    @Inject
+    FirebaseUser user;
+    @Inject
+    FirebaseJobDispatcher jobDispatcher;
+    @Inject
+    SharedPreferences preferences;
+    @Inject
+    FirebaseStorage storage;
+
+    @Inject
+    @Meet
+    DatabaseReference meetReference;
+    @Inject
+    @Technical
+    DatabaseReference technicalReference;
+    @Inject
+    @Hack
+    DatabaseReference hackReference;
+    @Inject
+    @Education
+    DatabaseReference educationReference;
+    @Inject
+    @Content
+    DatabaseReference contentReference;
+
+
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.container)
@@ -96,6 +132,18 @@ public class BaseActivity extends AppCompatActivity {
     @BindView(R.id.profileImage)
     CircleImageView profileImage;
 
+    public static String getMD5(String inputText) {
+        String md5 = "";
+        try {
+            MessageDigest digester = MessageDigest.getInstance("MD5");
+            digester.update(inputText.getBytes());
+            md5 = new BigInteger(1, digester.digest()).toString(16);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return md5;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +151,8 @@ public class BaseActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         ButterKnife.bind(profileImage, toolbar);
         setSupportActionBar(toolbar);
+
+        GlobalInfoApplication.get(this).getComponent().inject(this);
 
         defaultNightMode = AppCompatDelegate.getDefaultNightMode();
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -130,9 +180,8 @@ public class BaseActivity extends AppCompatActivity {
                 final EditText fName = ButterKnife.findById(profileView, firstName);
                 final EditText lName = ButterKnife.findById(profileView, R.id.lastName);
                 final EditText email = ButterKnife.findById(profileView, R.id.email);
-                ImageView upload = ButterKnife.findById(profileView, R.id.imagePicker);
+                final ImageView upload = ButterKnife.findById(profileView, R.id.imagePicker);
 
-                FirebaseUser user = GlobalInfoApplication.getAuth().getCurrentUser();
                 if (user != null) {
                     String[] fullName = new String[2];
                     try {
@@ -164,7 +213,7 @@ public class BaseActivity extends AppCompatActivity {
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                userImageUri = GlobalInfoApplication.getAuth().getCurrentUser().getPhotoUrl();
+                                userImageUri = user.getPhotoUrl();
                                 updateProfile(fName.getText().toString(), lName.getText().toString(), email.getText().toString());
                             }
                         })
@@ -175,10 +224,9 @@ public class BaseActivity extends AppCompatActivity {
 
         tabLayout.setupWithViewPager(mViewPager);
         Log.d("DeviceID", getDeviceId());
-        FirebaseAuth auth = GlobalInfoApplication.getAuth();
-        if (auth.getCurrentUser() != null) {
-            Log.e(TAG, String.valueOf(auth.getCurrentUser().getPhotoUrl()));
-            Picasso.with(this).load(auth.getCurrentUser().getPhotoUrl()).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(profileImage);
+        if (user != null) {
+            Log.e(TAG, String.valueOf(user.getPhotoUrl()));
+            Picasso.with(this).load(user.getPhotoUrl()).placeholder(R.drawable.default_pic).error(R.drawable.default_pic).into(profileImage);
         } else {
             startActivityForResult(
                     AuthUI.getInstance()
@@ -208,19 +256,6 @@ public class BaseActivity extends AppCompatActivity {
                 .build();
         interstitialAd.loadAd(adRequest);
     }
-
-    public static String getMD5(String inputText) {
-        String md5 = "";
-        try {
-            MessageDigest digester = MessageDigest.getInstance("MD5");
-            digester.update(inputText.getBytes());
-            md5 = new BigInteger(1, digester.digest()).toString(16);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return md5;
-    }
-
 
     public String getDeviceId() {
         String androidID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -335,7 +370,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        GlobalInfoApplication.getJobDispatcher().cancelAll();
+        jobDispatcher.cancelAll();
         Log.d("AdLoadingStatus", String.valueOf(interstitialAd.isLoading()));
         Log.d("AdLoaded", String.valueOf(interstitialAd.isLoaded()));
         GlobalInfoApplication.incrementCount();
@@ -348,15 +383,15 @@ public class BaseActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         Log.d(getClass().getSimpleName(), "onPause Called");
-        if (GlobalInfoApplication.getSharedPreferences().getInt("preferenceNotifTime", 60) != 0)
-            scheduleJob(GlobalInfoApplication.getSharedPreferences().getInt("preferenceNotifTime", 60));
+        if (preferences.getInt("preferenceNotifTime", 60) != 0)
+            scheduleJob(preferences.getInt("preferenceNotifTime", 60));
     }
 
     public void scheduleJob(int preferenceNotifTime) {
         final int periodicity = (int) TimeUnit.MINUTES.toSeconds(preferenceNotifTime); // Every given minutes periodicity
         final int toleranceInterval = (int) TimeUnit.MINUTES.toSeconds(10); // a small(ish) window of time when triggering is OK
         Log.d(getClass().getSimpleName(), "Job will execute in" + periodicity + " or " + periodicity + toleranceInterval);
-        Job myJob = GlobalInfoApplication.getJobDispatcher().newJobBuilder()
+        Job myJob = jobDispatcher.newJobBuilder()
                 .setService(FetchInfoService.class)
                 .setTag("FetchInfoServiceTag")
                 .setTrigger(Trigger.executionWindow(periodicity, periodicity + toleranceInterval))
@@ -365,7 +400,7 @@ public class BaseActivity extends AppCompatActivity {
                 .setReplaceCurrent(true)
                 .build();
 
-        int result = GlobalInfoApplication.getJobDispatcher().schedule(myJob);
+        int result = jobDispatcher.schedule(myJob);
         if (result != FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS) {
             Log.e(getClass().getSimpleName(), "Error executing task");
         }
@@ -414,25 +449,25 @@ public class BaseActivity extends AppCompatActivity {
                             String formattedDate = df.format(c.getTime());
                             String photoUrl = "";
                             try {
-                                photoUrl = GlobalInfoApplication.getAuth().getCurrentUser().getPhotoUrl().toString();
+                                photoUrl = user.getPhotoUrl().toString();
                             } catch (NullPointerException ignored) {
                             }
                             InfoObject infoObject = new InfoObject(title.getText().toString(), url.getText().toString().trim(),
-                                    desc.getText().toString(), GlobalInfoApplication.getAuth().getCurrentUser().getDisplayName(), category, formattedDate, GlobalInfoApplication.getAuth().getCurrentUser().getEmail(), photoUrl, System.currentTimeMillis());
+                                    desc.getText().toString(), user.getDisplayName(), category, formattedDate, user.getEmail(), photoUrl, System.currentTimeMillis());
 
 
                             switch (category) {
                                 case "Educational":
-                                    pushData(GlobalInfoApplication.getEduDbReference(), infoObject);
+                                    pushData(educationReference, infoObject);
                                     break;
                                 case "Hackathons":
-                                    pushData(GlobalInfoApplication.getHackDbReference(), infoObject);
+                                    pushData(hackReference, infoObject);
                                     break;
                                 case "Meetups":
-                                    pushData(GlobalInfoApplication.getMeetDbReference(), infoObject);
+                                    pushData(meetReference, infoObject);
                                     break;
                                 case "Technical Talks":
-                                    pushData(GlobalInfoApplication.getTechDbReference(), infoObject);
+                                    pushData(technicalReference, infoObject);
                                     break;
                                 default:
                                     Log.e(getClass().getSimpleName(), "Unable to push due to category mismatch");
@@ -454,10 +489,7 @@ public class BaseActivity extends AppCompatActivity {
         progressDialog.show();
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (photoUriFromCamera != null) {
-            GlobalInfoApplication.getFirebaseStorage().getReference(GlobalInfoApplication
-                    .getAuth()
-                    .getCurrentUser()
-                    .getUid())
+            storage.getReference(user.getUid())
                     .putFile(photoUriFromCamera).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -493,7 +525,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void pushData(final DatabaseReference reference, final InfoObject infoObject) {
-        final DatabaseReference tempReference = GlobalInfoApplication.getContentDbReference().push();
+        final DatabaseReference tempReference = contentReference.push();
         tempReference.setValue(infoObject).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
