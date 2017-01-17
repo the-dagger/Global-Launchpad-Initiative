@@ -16,8 +16,7 @@ import android.view.ViewGroup;
 
 import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
-import com.dagger.globalinfo.di.activity.ActivityComponent;
-import com.dagger.globalinfo.di.activity.DaggerActivityComponent;
+import com.dagger.globalinfo.di.application.ApplicationComponent;
 import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat;
 import com.takisoft.fix.support.v7.preference.SwitchPreferenceCompat;
 
@@ -38,9 +37,7 @@ public class PreferenceFragment extends PreferenceFragmentCompat {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ActivityComponent component = DaggerActivityComponent.builder()
-                .applicationComponent(GlobalInfoApplication.get(getContext()).getComponent())
-                .build();
+        ApplicationComponent component = GlobalInfoApplication.get(getContext()).getComponent();
         component.inject(this);
         SwitchPreferenceCompat nightMode = (SwitchPreferenceCompat) getPreferenceManager().findPreference("preferenceTheme");
         nightMode.setOnPreferenceChangeListener(new android.support.v7.preference.Preference.OnPreferenceChangeListener() {

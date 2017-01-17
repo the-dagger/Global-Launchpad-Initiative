@@ -1,9 +1,11 @@
-package com.dagger.globalinfo.di.activity;
+package com.dagger.globalinfo.di.list;
+
+import android.content.Context;
+import android.support.v7.widget.GridLayoutManager;
+import android.util.DisplayMetrics;
 
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.adapter.InfoAdapter;
-import com.dagger.globalinfo.di.qualifiers.Object;
-import com.dagger.globalinfo.di.qualifiers.ViewHolder;
 import com.dagger.globalinfo.model.InfoObject;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
@@ -16,27 +18,27 @@ import dagger.Provides;
  */
 
 @Module
-public class ActivityModule {
+public class ListModule {
     private DatabaseReference databaseReference;
+    private Context context;
 
-    public ActivityModule(DatabaseReference databaseReference) {
+    public ListModule(DatabaseReference databaseReference, Context context) {
         this.databaseReference = databaseReference;
+        this.context = context;
     }
 
     @Provides
-    @Object
     Class<InfoObject> provideInfoClass() {
         return InfoObject.class;
     }
 
     @Provides
-    Integer provideLayout() {
+    int provideLayout() {
         return R.layout.single_info;
     }
 
 
     @Provides
-    @ViewHolder
     Class<InfoAdapter.ViewHolder> provideHolderClass() {
         return InfoAdapter.ViewHolder.class;
     }
@@ -44,6 +46,14 @@ public class ActivityModule {
     @Provides
     Query provideQuery() {
         return databaseReference.orderByChild("timeInMillis");
+    }
+
+    @Provides
+    GridLayoutManager provideLayoutManager() {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float width = displayMetrics.widthPixels / displayMetrics.density;
+        int spanCount = (int) (width / 300.00);
+        return new GridLayoutManager(context, spanCount);
     }
 
 }

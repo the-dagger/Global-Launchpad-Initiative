@@ -11,7 +11,6 @@ import com.dagger.globalinfo.di.qualifiers.Technical;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -105,12 +104,6 @@ public class ApplicationModule {
     @Provides
     String provideContent() {
         return CONTENT;
-    }
-
-    @Singleton
-    @Provides
-    FirebaseUser provideUser() {
-        return firebaseAuth.getCurrentUser();
     }
 
 }

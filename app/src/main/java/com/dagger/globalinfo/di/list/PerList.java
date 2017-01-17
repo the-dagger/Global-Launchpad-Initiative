@@ -1,14 +1,14 @@
-package com.dagger.globalinfo.di.qualifiers;
+package com.dagger.globalinfo.di.list;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import javax.inject.Qualifier;
+import javax.inject.Scope;
 
 /**
  * Created by saurabh on 16/1/17.
  */
-@Qualifier
+@Scope
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Object {
+public @interface PerList {
 }

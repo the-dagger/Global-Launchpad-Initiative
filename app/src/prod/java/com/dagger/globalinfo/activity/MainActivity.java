@@ -5,30 +5,22 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.dagger.globalinfo.BuildConfig;
-import com.dagger.globalinfo.GlobalInfoApplication;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.util.ArrayList;
-
-import javax.inject.Inject;
 
 public class MainActivity extends BaseActivity {
     public static final String KEY_ADMINS = "admins";
     public static ArrayList<String> admins = new ArrayList<>();
     public static boolean isAdmin = false;
 
-    @Inject
-    FirebaseUser user;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        GlobalInfoApplication.get(this).getComponent().inject(this);
 
         if (user== null) {
             return;

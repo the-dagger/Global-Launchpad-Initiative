@@ -11,8 +11,7 @@ import android.util.Log;
 import com.dagger.globalinfo.GlobalInfoApplication;
 import com.dagger.globalinfo.R;
 import com.dagger.globalinfo.activity.MainActivity;
-import com.dagger.globalinfo.di.activity.ActivityComponent;
-import com.dagger.globalinfo.di.activity.DaggerActivityComponent;
+import com.dagger.globalinfo.di.application.ApplicationComponent;
 import com.dagger.globalinfo.di.qualifiers.Content;
 import com.dagger.globalinfo.model.InfoObject;
 import com.firebase.jobdispatcher.JobService;
@@ -32,7 +31,6 @@ public class FetchInfoService extends JobService {
     private static final String TAG = "SyncService";
     private static final String KEY = "LatestDataKey";
     InfoObject note;
-    NotificationCompat.Builder notificationBuilder;
 
     @Inject
     @Content
@@ -41,9 +39,7 @@ public class FetchInfoService extends JobService {
     SharedPreferences sharedPreferences;
 
     public FetchInfoService() {
-        ActivityComponent component = DaggerActivityComponent.builder()
-                .applicationComponent(GlobalInfoApplication.get(this).getComponent())
-                .build();
+        ApplicationComponent component = GlobalInfoApplication.get(this).getComponent();
         component.inject(this);
     }
 
@@ -63,7 +59,7 @@ public class FetchInfoService extends JobService {
                 if (!sharedPreferences.getString(KEY, "").equals(note.getEmail().concat(String.valueOf(note.getTimeInMillis())))) {
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
+                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic_update)
                             .setContentTitle(note.getTitle())
                             .setContentText(note.getDescription())

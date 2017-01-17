@@ -2,7 +2,6 @@ package com.dagger.globalinfo.adapter;
 
 import android.view.View;
 
-import com.dagger.globalinfo.di.qualifiers.Object;
 import com.dagger.globalinfo.model.InfoObject;
 import com.google.firebase.database.Query;
 
@@ -22,7 +21,7 @@ public class InfoAdapter extends BaseAdapter {
      *                        combination of {@code limit()}, {@code startAt()}, and {@code endAt()}.
      */
     @Inject
-    public InfoAdapter(@Object Class<InfoObject> modelClass, int modelLayout, @com.dagger.globalinfo.di.qualifiers.ViewHolder Class<ViewHolder> viewHolderClass, Query ref) {
+    public InfoAdapter(Class<InfoObject> modelClass, int modelLayout, Class<ViewHolder> viewHolderClass, Query ref) {
         super(modelClass, modelLayout, viewHolderClass, ref);
     }
 

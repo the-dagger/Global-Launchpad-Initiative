@@ -2,11 +2,11 @@ package com.dagger.globalinfo.adapter;
 
 import android.view.View;
 
-import com.dagger.globalinfo.activity.BaseActivity;
 import com.dagger.globalinfo.activity.MainActivity;
 import com.dagger.globalinfo.model.InfoObject;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.Query;
+
+import javax.inject.Inject;
 
 /**
  * Created by Harshit on 08/01/17.
@@ -21,6 +21,7 @@ public class InfoAdapter extends BaseAdapter {
      * @param ref             The Firebase location to watch for data changes. Can also be a slice of a location, using some
      *                        combination of {@code limit()}, {@code startAt()}, and {@code endAt()}.
      */
+    @Inject
     public InfoAdapter(Class<InfoObject> modelClass, int modelLayout, Class<ViewHolder> viewHolderClass, Query ref) {
         super(modelClass, modelLayout, viewHolderClass, ref);
     }

@@ -92,8 +92,9 @@ public class BaseActivity extends AppCompatActivity {
     SectionsPagerAdapter mSectionsPagerAdapter;
     View profileView;
 
-    //    @Inject FirebaseAuth firebaseAuth;
     @Inject
+    FirebaseAuth firebaseAuth;
+    //Dagger doesn't support returning null.
     FirebaseUser user;
     @Inject
     FirebaseJobDispatcher jobDispatcher;
@@ -153,6 +154,8 @@ public class BaseActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         GlobalInfoApplication.get(this).getComponent().inject(this);
+
+        user = firebaseAuth.getCurrentUser();
 
         defaultNightMode = AppCompatDelegate.getDefaultNightMode();
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
